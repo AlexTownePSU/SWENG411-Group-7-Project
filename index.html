@@ -1,0 +1,23 @@
+<html>
+<head>
+	<title>SWENG 411 Web App Project</title>
+</head>
+<body>
+	<p>Hello my fellow group members! :)</p>
+	<p>Below is (hopefully) a list of movie titles that are stored in our sample database from MongoDB!</p>
+	<ul id="data-list" />
+	<script>
+		fetch ('/api/data')
+		.then(response => response.json())
+		.then(data => {
+			const dataList = document.getElementById('data-list');
+			data.forEach(item => {
+				const listItem = document.createElement('li');
+				listItem.textContent = item.title;		// Assumes your data has a 'title' property. The sample Mongo data does.
+				dataList.appendChild(listItem);
+			});
+		})
+		.catch(error => console.error('Error fetching data:', error));
+	</script>
+</body>
+</html>
