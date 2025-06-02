@@ -40,21 +40,50 @@ async function connectToDB() {
 		console.error('Failed to connected to MongoDB:', err);
 	}
 }
+
 // API endpoints
 app.use(express.json());	// Allows for parsing JSON bodies
-// GET Handler -- ONLY for movie titles as a test
-app.get('/api/data', async (req, res) => {
-	try {
-		const collection = db.collection('movies');
-		const data = await collection.find().limit(50).toArray(); // Limit for testing
-		res.json(data);
-	} catch (error) {
-		console.error(error);
-		res.status(500).send('Error fetching data');
-	} finally {
-		await client.close();
-	}
-});
+// GET Handler Function
+function createGetHandler(collectionName, limit = 100) {
+	return async (req, res) => {
+		try {
+			const collection = db.collection(collectionName);
+			const data = await collection.find().limit(limit).toArray();
+			res.json(data);
+		} catch (error) {
+			console.error(error);
+			res.status(500).send('Error fetching data');
+		}
+	};
+}
+
+// POST Handler Function
+function createPostHandler(collectionName, requiredFields) {
+	return async (req, res) => {
+		const payload = {};
+
+		// Validate and build the payload
+		for (const field of requiredFields) {
+			const value = req.body[field];
+			if (typeof value !== 'string' || value.trim() === '') {
+				return res.status(400).json({ error: `Missing or invalid field: ${field}` });
+			}
+			payload[field] = value.trim();
+		}
+
+		try {
+			const collection = db.collection(collectionName);
+			const result = await collection.insertOne(payload);
+			res.status(201).json({ insertedId: result.insertedId });
+		} catch (error) {
+			console.error(error);
+			res.status(500).send('Error inserting data');
+		}
+	};
+}
+
+app.get('/api/movies', createGetHandler('movies'));
+app.post('/api/movies', createPostHandler('movies', ['title']));
 
 // Connect to DB then Start server
 connectToDB().then(() => {
