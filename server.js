@@ -43,8 +43,9 @@ async function connectToDB() {
 
 // API endpoints
 app.use(express.json());	// Allows for parsing JSON bodies
+
 // GET Handler Function
-function createGetHandler(collectionName, limit = 100) {
+function createGetHandler(collectionName, limit = 10) {
 	return async (req, res) => {
 		try {
 			const collection = db.collection(collectionName);

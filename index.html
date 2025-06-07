@@ -1,23 +1,42 @@
 <html>
 <head>
 	<title>SWENG 411 Web App Project</title>
+	<link rel="stylesheet" href="css/stylesheet.css" />		<!-- Example Stylsheet -->
+	<script src="js/test.js"></script>						<!-- Example JavaScript -->
 </head>
 <body>
-	<p>Hello my fellow group members! :)</p>
+	<script>greetingMessage();</script>
+	<script>
+		var today = new Date();
+		var hourNow = today.getHours();
+		var message = " and hello my fellow group members! :)";
+		if (hourNow > 18) {
+			document.write("Good evening" + message);
+		} else if (hourNow < 18 && hourNow >= 12) {
+			document.write("Good afternoon" + message);
+		} else {
+			document.write("Good morning" + message);
+		}
+	</script>
+	<div id="user-info">
+		<form id="user-info">
+			<input type="text" id="firstName" placeholder="Enter your first name" required />
+			<input type="text" id="lastName" placeholder="Enter your last name" required />
+		</form>
+	</div>
 	<form id="movie-form">
 		<input type="text" id="title" placeholder="Enter a movie title" required />
 		<button type="submit">Add Movie</button>
 	</form>
 	<p>Below is (hopefully) a list of movie titles that are stored in our sample database from MongoDB!</p>
-	<ul id="data-list"></ul></ul>
+	<ul id="data-list"></ul>
 	<script>
-		// Fetch the existing data
+		// Fetch existing data
 		function loadMovies(){
 		fetch ('/api/movies')
 		.then(response => response.json())
 		.then(data => {
 			const dataList = document.getElementById('data-list');
-			dataList.innerHTML = "";	// Clear list before adding new items
 			data.forEach(item => {
 				const listItem = document.createElement('li');
 				listItem.textContent = item.title;		// Assumes your data has a 'title' property. The sample Mongo data does.
@@ -25,8 +44,7 @@
 			});
 		})
 		.catch(error => console.error('Error fetching data:', error));
-		}
-		
+	}
 		loadMovies();
 
 		// POST handler
@@ -45,7 +63,7 @@
 
 				if (res.ok) {
 					const json = await res.json();
-					showPopupMessage(`Movie "${title}" added successfully!`);
+					showPopupMessage(`Movie "${title}" added successfully!`);	// Display green colored popup to indicate successful post to API
 					document.getElementById('title').value = '';
 					loadMovies(); // Refresh list
 				} else {
@@ -81,5 +99,6 @@
 	z-index: 1000;
 	font-family: sans-serif;
 	pointer-events: none;"></div>
+	</script>
 </body>
 </html>
