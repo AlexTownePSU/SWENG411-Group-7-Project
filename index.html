@@ -1,7 +1,7 @@
 <html>
 <head>
 	<title>SWENG 411 Web App Project</title>
-	<link rel="stylesheet" href="css/stylesheet.css" />		<!-- Example Stylsheet -->
+	<link rel="stylesheet" href="/css/stylesheet.css" />		<!-- Example Stylsheet -->
 	<script src="js/test.js"></script>						<!-- Example JavaScript -->
 </head>
 <body>
@@ -18,6 +18,70 @@
 			document.write("Good morning" + message);
 		}
 	</script>
+	<h1>Find Employee</h1>
+	<p>Enter an Id to search and/or a name to search a specific employee. Leave them blank to get all employees in the database.</p>
+	<div>
+		<label for="employeeIdInput">ID</label>
+		<input type="text" id="employeeIdInput" placeholder="Enter Employee ID">
+	</div>
+	<div>
+		<label for="employeeNameInput">Name</label>
+		<input type="text" id="employeeNameInput" placeholder="Enter Employee Name">
+	</div>
+	<div>
+		<label for="employeeHireDateInput">Hire Date</label>
+		<input type="date" id="employeeHireDateInput">
+	</div>
+	<div>
+		<label for="employeeJobTitleInput">Job Title</label>
+		<input type="text" id="employeeJobTitleInput" placeholder="Not implemented yet">
+	</div>
+	<div>
+		<label for="employeeActiveInput">Active</label>
+		<input type="checkbox" id="employeeActiveInput">
+	</div>
+	<br><br>
+	<button onclick="getEmployee()">Search Employees</button>
+	<h2>Employee search results:</h2>
+	<pre id="result"></pre>		<!--Store the AJAX json return in this box-->
+
+	<script>
+		async function getEmployee() {
+			const employeeId = document.getElementById('employeeIdInput').value;
+			const employee_name = document.getElementById('employeeNameInput').value;
+			const hire_date = document.getElementById('employeeHireDateInput').value;
+			const active = document.getElementById('employeeActiveInput').value;
+			const resultBox = document.getElementById('result');
+
+			if(active == 'on')
+				var active_val = true;
+			else
+				var active_val = false;
+
+			try {
+				const response = await fetch(`/api/employees?_id=${employeeId}&employee_name=${employee_name}&hire_date=${hire_date}`);
+
+				/*if (employeeId != '' && employee_name != '')
+					response = await fetch(`/api/employees?_id=${employeeId}&employee_name=${employee_name}`);
+				else if(employeeId == '' && employee_name != '')
+					response = await fetch(`/api/employees?employee_name=${employee_name}`);
+				else if (employeeId != '' && employee_name === '')
+					response = await fetch(`/api/employees?_id=${employeeId}`);
+				else
+					response = await fetch(`/api/employees`);*/arguments
+				if(!response.ok) {
+					throw new Error('Employee not found');
+				}
+				console.log('Searching for: ', response)
+				const data = await response.json();
+				resultBox.textContent = JSON.stringify(data, null, 2);
+			} catch (error) {
+				resultBox.textContent = `Error: ${error.message}`;
+			}
+		}
+	</script>
+
+	<br><br><br>
 	<div id="user-info">
 		<form id="user-info">
 			<input type="text" id="firstName" placeholder="Enter your first name" required />

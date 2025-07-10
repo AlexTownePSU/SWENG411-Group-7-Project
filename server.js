@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion } = require('mongodb');
+const employeesRoute = require('./routes/employees');
 
 const hostname = '192.168.86.158';
 const port = 3000;
@@ -43,6 +44,8 @@ async function connectToDB() {
 
 // API endpoints
 app.use(express.json());	// Allows for parsing JSON bodies
+app.use(express.urlencoded({ extended: true }));
+app.use('/api', employeesRoute);	// Include employee API routes
 
 // GET Handler Function
 function createGetHandler(collectionName, limit = 10) {
