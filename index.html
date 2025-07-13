@@ -18,61 +18,189 @@
 			document.write("Good morning" + message);
 		}
 	</script>
-	<h1>Find Employee</h1>
-	<p>Enter an Id to search and/or a name to search a specific employee. Leave them blank to get all employees in the database.</p>
-	<div>
-		<label for="employeeIdInput">ID</label>
-		<input type="text" id="employeeIdInput" placeholder="Enter Employee ID">
+	<div id="SearchEmployeeContainer">
+		<h1>Find Employee</h1>
+		<p>Enter an Id to search and/or a name to search a specific employee. Leave them blank to get all employees in the database.</p>
+		<form id="SearchEmpForm">
+			<table id="SaerchEmpTable">
+				<tr>
+					<td><label for="employeeIdInput">ID</label></td>
+					<td><input type="text" id="employeeIdInput" placeholder="Enter Employee ID"></td>
+				</tr>
+				<tr>
+					<td><label for="employeeNameInput">Name</label></td>
+					<td><input type="text" id="employeeNameInput" placeholder="Enter Employee Name" requried></td>
+				</tr>
+				<tr>
+					<td><label for="employeeHireDateInput">Hire Date</label></td>
+					<td><input type="date" id="employeeHireDateInput"></td>
+				</tr>
+				<tr>
+					<td><label for="employeeJobTitleInput">Job Title</label></td>
+					<td><input type="text" id="employeeJobTitleInput" placeholder="Enter Job Title" required></td>
+				</tr>
+				<tr>
+					<td><label for="employeeActiveInput">Active</label></td>
+					<td><input type="checkbox" id="employeeActiveInput"></td>
+				</tr>
+			</table>
+		</form>
+		<button onclick="getEmployee()">Search Employees</button>
+		<button onclick="clearEmployee()">Clear Results</button>
+		<h2>Employee search results:</h2>
+		<div id="result"></div>  <!-- Storage for JSON results -->
 	</div>
-	<div>
-		<label for="employeeNameInput">Name</label>
-		<input type="text" id="employeeNameInput" placeholder="Enter Employee Name">
-	</div>
-	<div>
-		<label for="employeeHireDateInput">Hire Date</label>
-		<input type="date" id="employeeHireDateInput">
-	</div>
-	<div>
-		<label for="employeeJobTitleInput">Job Title</label>
-		<input type="text" id="employeeJobTitleInput" placeholder="Not implemented yet">
-	</div>
-	<div>
-		<label for="employeeActiveInput">Active</label>
-		<input type="checkbox" id="employeeActiveInput">
-	</div>
-	<br><br>
-	<button onclick="getEmployee()">Search Employees</button>
-	<h2>Employee search results:</h2>
-	<pre id="result"></pre>		<!--Store the AJAX json return in this box-->
-
 	<script>
+		async function getEmployee() {
+			// 1. Read your search inputs
+			const id    = document.getElementById('employeeIdInput').value.trim();
+			const name  = document.getElementById('employeeNameInput').value.trim();
+			const date  = document.getElementById('employeeHireDateInput').value;
+			const title = document.getElementById('employeeJobTitleInput').value.trim();
+			const activeChecked = document.getElementById('employeeActiveInput').checked;
+
+			// 2. Build query string (only include non‐empty fields)
+			const params = new URLSearchParams();
+			if (id)    params.append('_id', id);
+			if (name)  params.append('employee_name', name);
+			if (date)  params.append('hire_date', date);
+			if (title) params.append('job_title', title);
+			if (activeChecked) params.append('active', true);
+
+			try {
+			// 3. Fetch your GET endpoint
+			const res = await fetch(`/api/GetEmployees?${params.toString()}`);
+			console.log('API URL: ', res);
+			if (!res.ok) throw new Error('Fetch failed');
+			const employees = await res.json();
+			displayEmployees(employees);
+			} catch (err) {
+			console.error(err);
+			document.getElementById('result').innerHTML = `<p style="color:red">Error loading employees.</p>`;
+			}
+		}
+
+		function clearEmployee() {
+			document.getElementById('result').innerHTML = '';
+			document.getElementById('SearchEmpForm').reset();
+		}
+
+		function displayEmployees(list) {
+			const container = document.getElementById('result');
+			console.log('Results from DB: ', result);
+			container.innerHTML = '';               // clear previous results
+
+			if (!Array.isArray(list) || list.length === 0) {
+			container.innerHTML = '<p>No employees found.</p>';
+			return;
+			}
+
+			// 4. Create a table
+			const table = document.createElement('table');
+			table.border = 1;
+			table.style.width = '100%';
+			table.innerHTML = `
+			<thead>
+				<tr>
+				<th>Name</th>
+				<th>Hire Date</th>
+				<th>Job Title</th>
+				<th>Active</th>
+				<th>Actions</th>
+				</tr>
+			</thead>
+			`;
+
+			const tbody = document.createElement('tbody');
+
+			list.forEach(emp => {
+			const tr = document.createElement('tr');
+			
+			// format hire date to YYYY-MM-DD for display
+			const hireDate = new Date(emp.hire_date).toISOString().slice(0,10);
+			console.log('Employee Ids found: ', emp._id);
+			tr.innerHTML = `
+				<td>${emp.employee_name}</td>
+				<td>${hireDate}</td>
+				<td>${emp.job_title}</td>
+				<td>${emp.active ? 'Yes' : 'No'}</td>
+			`;
+			
+			// create Edit button cell
+			const actionTd = document.createElement('td');
+			const btn = document.createElement('button');
+			btn.textContent = 'Edit';
+			btn.addEventListener('click', () => openEditModal(emp._id));
+			actionTd.appendChild(btn);
+			tr.appendChild(actionTd);
+
+			tbody.appendChild(tr);
+			});
+
+			table.appendChild(tbody);
+			container.appendChild(table);
+		}
+		async function openEditModal(id) {
+			// Fetch employee data from your GET endpoint
+			const response = await fetch(`/api/GetEmployees?_id=${id}`);
+			const employee = await response.json();
+			// Parse the string into a Date, then format
+			const hireDate = new Date(employee.hire_date)
+				.toISOString()
+				.slice(0, 10);
+
+			document.getElementById('EditId').value = id;
+			document.getElementById('EditName').value = employee.employee_name;
+			document.getElementById('EditJobTitle').value = employee.job_title;
+			document.getElementById('EditHireDate').value = hire_date;
+			document.getElementById('EditActive').checked = employee.active;
+
+			document.getElementById('EditModal').style.display = 'block';
+		}
+
+		function closeEditModal() {
+			document.getElementById('EditModal').style.display = 'none';
+		}
+	</script>
+	<div id="EditModal" style="display:none; position:fixed; top:20%; left:50%; transform:translateX(-50%); background:#fff; padding:20px; border:1px solid #ccc; z-index:1000;">
+		<h2>Edit Employee</h2>
+		<form id="EditForm">
+			<input type="hidden" id="EditId">
+			
+			<label>Name:</label>
+			<input type="text" id="EditName" required><br>
+
+			<label>Job Title:</label>
+			<input type="text" id="EditJobTitle" required><br>
+
+			<label>Hire Date:</label>
+			<input type="date" id="EditHireDate" required><br>
+
+			<label>Active:</label>
+			<input type="checkbox" id="EditActive"><br>
+
+			<button type="submit">Update</button>
+			<button type="button" onclick="closeEditModal()">Cancel</button>
+		</form>
+	</div>
+
+
+	<!--<script>
 		async function getEmployee() {
 			const employeeId = document.getElementById('employeeIdInput').value;
 			const employee_name = document.getElementById('employeeNameInput').value;
 			const hire_date = document.getElementById('employeeHireDateInput').value;
-			const active = document.getElementById('employeeActiveInput').value;
+			const job_title = document.getElementById('employeeJobTitleInput').value;
+			const active = document.getElementById('employeeActiveInput').checked;
 			const resultBox = document.getElementById('result');
 
-			if(active == 'on')
-				var active_val = true;
-			else
-				var active_val = false;
-
 			try {
-				const response = await fetch(`/api/employees?_id=${employeeId}&employee_name=${employee_name}&hire_date=${hire_date}`);
-
-				/*if (employeeId != '' && employee_name != '')
-					response = await fetch(`/api/employees?_id=${employeeId}&employee_name=${employee_name}`);
-				else if(employeeId == '' && employee_name != '')
-					response = await fetch(`/api/employees?employee_name=${employee_name}`);
-				else if (employeeId != '' && employee_name === '')
-					response = await fetch(`/api/employees?_id=${employeeId}`);
-				else
-					response = await fetch(`/api/employees`);*/arguments
+				const response = await fetch(`/api/GetEmployees?_id=${employeeId}&employee_name=${employee_name}&hire_date=${hire_date}&job_title=${job_title}`);
+				arguments
 				if(!response.ok) {
 					throw new Error('Employee not found');
 				}
-				console.log('Searching for: ', response)
+				console.log('Searching for: ', response);
 				const data = await response.json();
 				resultBox.textContent = JSON.stringify(data, null, 2);
 			} catch (error) {
@@ -80,8 +208,102 @@
 			}
 		}
 	</script>
+	<script>
+		async function clearEmployee() {
+			const resultBox = document.getElementById('result');
 
+			resultBox.textContent = "";
+		}
+	</script>-->
 	<br><br><br>
+
+	<div id="SubmitNewEmployeeContainer">
+		<h1>Submit New Employee</h1>
+		<form id="NewEmployee">
+			<table id="SubmitEmployeeTable">
+				<tr>
+					<td><label for="SubmitName">Employee Name</label></td>
+					<td><input type="text" id="SubmitName" placeholder="Enter employee name"></td>
+				</tr>
+				<tr>
+					<td><label for="SubmitHireDate">Hire Date</label></td>
+					<td><input type="date" id="SubmitHireDate"></td>
+				</tr>
+				<tr>
+					<td><label for="SubmitJobTitle">Job Title</label></td>
+					<td><input type="text" id="SubmitJobTitle" placeholder="Job title"></td>
+				</tr>
+				<tr>
+					<td><label for="SubmitActive">Active</label></td>
+					<td><input type="checkbox" id="SubmitActive"></td>
+				</tr>
+			</table>
+			<button type="submit">Submit Employee</button>
+		</form>
+	</div>
+	<script>
+		document.getElementById('NewEmployee').addEventListener('submit', async(e) => {
+			e.preventDefault();	// Prevent default form behavior
+
+			const employee_name = document.getElementById('SubmitName').value;
+			const rawHireDate = document.getElementById('SubmitHireDate').value;
+			const hire_date = new Date(rawHireDate);	// Pass date as datetime field for MongoDB
+			const job_title = document.getElementById('SubmitJobTitle').value;
+			const active = document.getElementById('SubmitActive').checked;
+
+			const payload = { employee_name, hire_date, job_title, active };
+
+			try {
+				const response = await fetch('/api/SubmitEmployees', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(payload)
+			});
+			console.log('JSON String submitted: ', JSON.stringify({employee_name, hire_date, job_title, active }));
+			console.log('Full response: ', response);
+			if(!response.ok) {
+				throw new Error('Invalid input');
+			}
+
+			const result = await response.json();
+			console.log('Submitted employee: ', result);
+			alert('Employee submitted successfully!');
+			e.target.reset();	// Clear form
+			} catch (error) {
+				console.error(error);
+				alert('Submission failed');
+			}
+		});
+	</script>
+
+	<div id="UpdateEmployees">
+		<script>
+			async function updateEmployee(id) {
+				const employee_name = document.getElementById('EditName').value;
+				const hire_date = new Date(document.getElementById('EditHireDate').value);
+				const job_title = document.getElementById('EditJobTitle').value;
+				const active = document.getElementById('EditActive').checked;
+
+				const payload = { employee_name, hire_date, job_title, active };
+
+				try {
+					const response = await fetch(`/UpdateEmployee/${id}`, {
+					method: 'PUT',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(payload)
+					});
+
+					if (!response.ok) throw new Error('Update failed');
+					alert('Employee updated successfully!');
+				} catch (err) {
+					console.error(err);
+					alert('Something went wrong during the update.');
+				}
+			}
+		</script>
+	</div>
 	<div id="user-info">
 		<form id="user-info">
 			<input type="text" id="firstName" placeholder="Enter your first name" required />

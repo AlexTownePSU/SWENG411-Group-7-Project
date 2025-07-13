@@ -8,5 +8,24 @@ h3 {
 }
 
 input {
-    padding: 0px;
+    padding: 5px;
+}
+
+div {
+    padding: 10px;
+}
+
+#SearchEmployeeContainer {
+    width: 500px;
+    height: auto;
+    border-radius: 10px;
+    border-color: black;
+    align-self: auto;
+}
+
+#SubmitNewEmployeeContainer {
+    width: 325px;
+    height: auto;
+    border-radius: 10px;
+    border-color: black;
 }

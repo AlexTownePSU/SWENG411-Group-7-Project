@@ -6,6 +6,7 @@ const dbName = 'raise_tracker_db';
 
 let db;
 
+// Use this to connect to the database globally without the need to continue to connect
 async function connectToDatabase() {
   if (!db) {
     await client.connect();
