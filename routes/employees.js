@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const { MongoClient } = require('mongodb');
 const { ObjectId } = require('mongodb');
 const connectToDatabase = require('../db/db.js');
 
@@ -43,6 +42,20 @@ router.get('/GetEmployees', async (req, res) => {
         }
     }
 
+    // Check for email parameter
+    if (req.query.email) {
+      const email = req.query.email?.trim();
+      console.log('Searching for email:', req.query.email);
+      query.email = { $regex: email, $options: 'i' }; 
+    }
+
+    // Check for phone_number parameter
+    if (req.query.phone_number) {
+      const phoneNumber = req.query.phone_number?.trim();
+      console.log('Searching for phone number:', req.query.phone_number);
+      query.phone_number = { $regex: phoneNumber, $options: 'i' };
+    }
+
     // Check for job_title parameter
     if (req.query.job_title) {
       const jobTitle = req.query.job_title?.trim();
@@ -51,7 +64,6 @@ router.get('/GetEmployees', async (req, res) => {
     }
 
     // Check for active parameter
-    // TODO fix active search -- HTML/CSS set checkbox values to 'on' or 'off' need a good way to translate that
     if (req.query.active) {
       query.activeValue = req.query.active;
     }
@@ -109,5 +121,18 @@ router.put('/UpdateEmployees/:id', async (req, res) => {
     res.status(500).json({ error: 'Failed to update employee', details: error.message });
   }
 });
+
+router.delete('/DeleteEmployees/:id', async (req, res) => {
+  try {
+    const db = await connectToDatabase();
+    const collection = db.collection('employees');
+
+    const employeeId = req.params.id;
+    const result = await collection.deleteOne({ _id: new ObjectId(employeeId) });
+  } catch (error) {
+    console.error('Delete error:', error.stack);
+    return res.status(500).json({ error: 'Failed to delete employee', details: error.message });
+  }
+})
 
 module.exports = router;

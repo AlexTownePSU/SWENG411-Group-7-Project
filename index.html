@@ -2,27 +2,28 @@
 <head>
 	<title>SWENG 411 Web App Project</title>
 	<link rel="stylesheet" href="/css/stylesheet.css" />		<!-- Example Stylsheet -->
-	<script src="js/test.js"></script>						<!-- Example JavaScript -->
 </head>
 <body>
-	<script>greetingMessage();</script>
 	<script>
-		var today = new Date();
-		var hourNow = today.getHours();
-		var message = " and hello my fellow group members! :)";
-		if (hourNow > 18) {
-			document.write("Good evening" + message);
-		} else if (hourNow < 18 && hourNow >= 12) {
-			document.write("Good afternoon" + message);
-		} else {
-			document.write("Good morning" + message);
+			function greetingMessage() {
+			var today = new Date();
+			var hourNow = today.getHours();
+			var message = " and hello my fellow group members! :)";
+			if (hourNow > 18) {
+				document.write("Good evening" + message);
+			} else if (hourNow < 18 && hourNow >= 12) {
+				document.write("Good afternoon" + message);
+			} else {
+				document.write("Good morning" + message);
+			}
 		}
 	</script>
+	<script>greetingMessage();</script>
 	<div id="SearchEmployeeContainer">
 		<h1>Find Employee</h1>
 		<p>Enter an Id to search and/or a name to search a specific employee. Leave them blank to get all employees in the database.</p>
 		<form id="SearchEmpForm">
-			<table id="SaerchEmpTable">
+			<table id="SearchEmpTable">
 				<tr>
 					<td><label for="employeeIdInput">ID</label></td>
 					<td><input type="text" id="employeeIdInput" placeholder="Enter Employee ID"></td>
@@ -183,40 +184,7 @@
 			<button type="button" onclick="closeEditModal()">Cancel</button>
 		</form>
 	</div>
-
-
-	<!--<script>
-		async function getEmployee() {
-			const employeeId = document.getElementById('employeeIdInput').value;
-			const employee_name = document.getElementById('employeeNameInput').value;
-			const hire_date = document.getElementById('employeeHireDateInput').value;
-			const job_title = document.getElementById('employeeJobTitleInput').value;
-			const active = document.getElementById('employeeActiveInput').checked;
-			const resultBox = document.getElementById('result');
-
-			try {
-				const response = await fetch(`/api/GetEmployees?_id=${employeeId}&employee_name=${employee_name}&hire_date=${hire_date}&job_title=${job_title}`);
-				arguments
-				if(!response.ok) {
-					throw new Error('Employee not found');
-				}
-				console.log('Searching for: ', response);
-				const data = await response.json();
-				resultBox.textContent = JSON.stringify(data, null, 2);
-			} catch (error) {
-				resultBox.textContent = `Error: ${error.message}`;
-			}
-		}
-	</script>
-	<script>
-		async function clearEmployee() {
-			const resultBox = document.getElementById('result');
-
-			resultBox.textContent = "";
-		}
-	</script>-->
-	<br><br><br>
-
+	<!-- API POST New employee example -->
 	<div id="SubmitNewEmployeeContainer">
 		<h1>Submit New Employee</h1>
 		<form id="NewEmployee">
@@ -278,6 +246,7 @@
 		});
 	</script>
 
+	<!-- API PUT Employee example -->
 	<div id="UpdateEmployees">
 		<script>
 			async function updateEmployee(id) {
@@ -304,87 +273,5 @@
 			}
 		</script>
 	</div>
-	<div id="user-info">
-		<form id="user-info">
-			<input type="text" id="firstName" placeholder="Enter your first name" required />
-			<input type="text" id="lastName" placeholder="Enter your last name" required />
-		</form>
-	</div>
-	<form id="movie-form">
-		<input type="text" id="title" placeholder="Enter a movie title" required />
-		<button type="submit">Add Movie</button>
-	</form>
-	<p>Below is (hopefully) a list of movie titles that are stored in our sample database from MongoDB!</p>
-	<ul id="data-list"></ul>
-	<script>
-		// Fetch existing data
-		function loadMovies(){
-		fetch ('/api/movies')
-		.then(response => response.json())
-		.then(data => {
-			const dataList = document.getElementById('data-list');
-			data.forEach(item => {
-				const listItem = document.createElement('li');
-				listItem.textContent = item.title;		// Assumes your data has a 'title' property. The sample Mongo data does.
-				dataList.appendChild(listItem);
-			});
-		})
-		.catch(error => console.error('Error fetching data:', error));
-	}
-		loadMovies();
-
-		// POST handler
-		document.getElementById('movie-form').addEventListener('submit', async (e) => {
-			e.preventDefault();
-			const title = document.getElementById('title').value;
-
-			try {
-				const res = await fetch('/api/movies', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					body: JSON.stringify({ title })
-				});
-
-				if (res.ok) {
-					const json = await res.json();
-					showPopupMessage(`Movie "${title}" added successfully!`);	// Display green colored popup to indicate successful post to API
-					document.getElementById('title').value = '';
-					loadMovies(); // Refresh list
-				} else {
-					console.error('Failed to add movie');
-				}
-			} catch (err) {
-				console.error('Error:', err);
-			}
-		});
-
-		function showPopupMessage(message, duration = 4000) {
-			const popup = document.getElementById('popup');
-			popup.textContent = message;
-			popup.style.opacity = '1'; // Fade in
-
-			// Auto hide after duration
-			setTimeout(() => {
-				popup.style.opacity = '0';
-			}, duration);
-		}
-	</script>
-	<div id="popup" style="
-	opacity: 0;
-	transition: opacity 0.5s ease;
-	position: fixed;
-	top: 20px;
-	right: 20px;
-	background-color: #4acf50;
-	color: white;
-	padding: 10px 20px;
-	border-radius: 5px;
-	box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-	z-index: 1000;
-	font-family: sans-serif;
-	pointer-events: none;"></div>
-	</script>
 </body>
 </html>
