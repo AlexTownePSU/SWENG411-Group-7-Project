@@ -6,7 +6,7 @@ const employeesRoute = require('./routes/employees');
 const connectToDatabase = require('./db/db.js');
 
 
-const hostname = '192.168.86.158';
+const hostname = '192.168.86.122';
 const port = 3000;
 const app = express();
 
