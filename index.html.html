@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RaiseTracker Dashboard</title>
+  <style>
+    body{
+      font-family:Arial, sans-serif;
+      background:linear-gradient(135deg,#f0f4ff 0%,#ffffff 100%);
+      margin:0;padding:0;
+    }
+    header{
+      background:#2d2d73;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.2);
+    }
+    .nav-inner{
+      max-width:1200px;margin:0 auto;
+      display:flex;justify-content:space-between;align-items:center;
+      padding:1rem;
+    }
+    .logo{font-style:italic;font-size:1.5rem;font-weight:bold;}
+    .relative{position:relative;}
+    .avatar-btn img{height:32px;width:32px;border-radius:9999px;}
+    .dropdown{
+      position:absolute;right:0;top:100%;margin-top:.5rem;
+      background:#fff;border:1px solid #e5e5e5;border-radius:6px;
+      box-shadow:0 4px 12px rgba(0,0,0,.15);width:160px;
+      display:none;z-index:100;
+    }
+    .dropdown a{
+      display:block;padding:.6rem 1rem;color:#333;text-decoration:none;
+      font-size:.9rem;
+    }
+    .dropdown a:hover{background:#f3f3f7;}
+    .container{max-width:1200px;margin:0 auto;padding:2rem;}
+    .filters,.employee-table{
+      margin-bottom:2rem;background:#fff;padding:1.5rem;border-radius:8px;
+      box-shadow:0 4px 12px rgba(0,0,0,.1);
+    }
+    label{margin-right:1rem;font-weight:500;}
+    input,select{
+      margin-right:.75rem;padding:.5rem;border:1px solid #ccc;border-radius:4px;
+    }
+    table{width:100%;border-collapse:collapse;}
+    th,td{padding:.75rem;border-bottom:1px solid #dee2e6;text-align:left;}
+    th{background:#e9ecef;font-weight:600;}
+    button,.action-btn{
+      padding:.5rem 1rem;background:#007bff;color:#fff;border:none;border-radius:4px;
+      cursor:pointer;margin-right:.5rem;transition:.2s ease;
+    }
+    button:hover,.action-btn:hover{background:#0056b3;transform:translateY(-1px);}
+    .action-btn{padding:.3rem .6rem;font-size:.9rem;}
+    .modal-overlay{
+      display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);
+      align-items:center;justify-content:center;z-index:1000;
+    }
+    .modal{
+      position:relative;background:#fff;padding:2rem;border-radius:8px;
+      width:90%;max-width:500px;box-shadow:0 4px 12px rgba(0,0,0,.3);
+      animation:fadeIn .25s ease;
+    }
+    .modal-close{
+      position:absolute;top:.4rem;right:.8rem;font-size:1.5rem;
+      cursor:pointer;color:#666;font-weight:700;
+    }
+    @keyframes fadeIn{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1)}
+  </style>
+  <!-- jsPDF CDN for PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <header>
+    <div class="nav-inner">
+      <div class="logo">RaiseTracker★</div>
+      <div class="relative">
+        <button id="userMenuBtn" class="avatar-btn" style="background:none;border:none;cursor:pointer;">
+          <img src="blank-profile-picture-973460_960_720-300x300.png" alt="avatar">
+        </button>
+        <div id="userDropdown" class="dropdown">
+          <a href="#">Profile</a>
+          <a href="#">Settings</a>
+          <a href="#">Logout</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="filters">
+      <h2>Filter Employees</h2>
+      <label>Employee Type:
+        <select id="filter-type">
+          <option value="all">All</option><option value="full-time">Full-Time</option>
+          <option value="part-time">Part-Time</option>
+        </select>
+      </label>
+      <label>Trained:
+        <select id="filter-trained">
+          <option value="all">All</option><option value="yes">Yes</option><option value="no">No</option>
+        </select>
+      </label>
+      <label>Start Date: <input type="date" id="filter-start-date"></label>
+      <button id="apply-filters">Apply Filters</button>
+      <button id="add-employee">Add Employee</button>
+    </div>
+
+    <div class="employee-table">
+      <h2 style="display:flex; align-items:center; justify-content:space-between;">
+        Employee Summary
+        <div style="position:relative;">
+          <button id="exportBtn" style="padding:.5rem 1rem; background:#007bff; color:#fff; border:none; border-radius:4px; cursor:pointer;">
+            Export ▼
+          </button>
+          <div id="exportDropdown" style="
+            position:absolute;
+            right:0;
+            top:100%;
+            margin-top:0.5rem;
+            background:#fff;
+            border:1px solid #e5e5e5;
+            border-radius:6px;
+            box-shadow:0 4px 12px rgba(0,0,0,.15);
+            width:140px;
+            display:none;
+            z-index:100;
+          ">
+            <a href="#" id="exportPdf" style="display:block; padding:.6rem 1rem; color:#333; text-decoration:none; font-size:.9rem;">Export to PDF</a>
+            <a href="#" id="exportCsv" style="display:block; padding:.6rem 1rem; color:#333; text-decoration:none; font-size:.9rem;">Export to CSV</a>
+          </div>
+        </div>
+      </h2>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th><th>Name</th><th>Type</th><th>Start Date</th>
+            <th>Trained</th><th>Qualification</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="employee-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- View Details Modal -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <span class="modal-close" id="modal-close">&times;</span>
+      <h3>Employee Details</h3>
+      <div id="modal-content"></div>
+    </div>
+  </div>
+
+  <!-- Edit Employee Modal -->
+  <div class="modal-overlay" id="edit-modal-overlay">
+    <div class="modal">
+      <span class="modal-close" id="edit-modal-close">&times;</span>
+      <h3>Edit Employee</h3>
+      <form id="edit-form">
+        <label>ID: <input type="text" id="edit-id" readonly></label><br><br>
+        <label>Name: <input type="text" id="edit-name"></label><br><br>
+        <label>Type:
+          <select id="edit-type">
+            <option value="Full-Time">Full-Time</option>
+            <option value="Part-Time">Part-Time</option>
+          </select>
+        </label><br><br>
+        <label>Start Date: <input type="date" id="edit-startDate"></label><br><br>
+        <label>Trained:
+          <select id="edit-trained">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </label><br><br>
+        <label>Qualification: <input type="text" id="edit-qualification"></label><br><br>
+        <button type="submit">Save</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Employee Modal -->
+  <div class="modal-overlay" id="add-modal-overlay">
+    <div class="modal">
+      <span class="modal-close" id="add-modal-close">&times;</span>
+      <h3>Add New Employee</h3>
+      <form id="add-form">
+        <label>ID: <input type="text" id="add-id" required></label><br><br>
+        <label>Name: <input type="text" id="add-name" required></label><br><br>
+        <label>Type:
+          <select id="add-type">
+            <option value="Full-Time">Full-Time</option>
+            <option value="Part-Time">Part-Time</option>
+          </select>
+        </label><br><br>
+        <label>Start Date: <input type="date" id="add-startDate" required></label><br><br>
+        <label>Trained:
+          <select id="add-trained">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </label><br><br>
+        <label>Qualification: <input type="text" id="add-qualification"></label><br><br>
+        <button type="submit">Add Employee</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const { jsPDF } = window.jspdf;
+
+    document.getElementById('userMenuBtn').addEventListener('click', e=>{
+      e.stopPropagation();
+      document.getElementById('userDropdown').style.display =
+        document.getElementById('userDropdown').style.display==='block' ? 'none' : 'block';
+    });
+    document.addEventListener('click', () => {
+      document.getElementById('userDropdown').style.display='none';
+    });
+
+    const employees=[
+      {id:'jsmith.1001',name:'John Smith',type:'Full-Time',startDate:'2021-04-12',trained:'Yes',qualification:'Qualified'},
+      {id:'adoe.1002',name:'Amanda Doe',type:'Part-Time',startDate:'2022-09-05',trained:'No',qualification:'In Training'},
+      {id:'bwilliams.1003',name:'Bruce Williams',type:'Full-Time',startDate:'2023-02-20',trained:'Yes',qualification:'Qualified'}
+    ];
+
+    let currentFilteredEmployees = [...employees];
+
+    function renderEmployees(list){
+      const tbody=document.getElementById('employee-body');
+      tbody.innerHTML='';
+      list.forEach(emp=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML=`
+          <td>${emp.id}</td><td>${emp.name}</td><td>${emp.type}</td>
+          <td>${emp.startDate}</td><td>${emp.trained}</td><td>${emp.qualification}</td>
+          <td>
+            <button class="action-btn" onclick="viewDetails('${emp.id}')">View</button>
+            <button class="action-btn" onclick="editEmployee('${emp.id}')">Edit</button>
+            <button class="action-btn" onclick="deleteEmployee('${emp.id}')">Delete</button>
+          </td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    const overlay=document.getElementById('modal-overlay');
+    const modalContent=document.getElementById('modal-content');
+    document.getElementById('modal-close').addEventListener('click',()=>overlay.style.display='none');
+    overlay.addEventListener('click',e=>{if(e.target===overlay) overlay.style.display='none';});
+
+    function viewDetails(id){
+      const emp=employees.find(e=>e.id===id);
+      modalContent.innerHTML=`
+        <p><strong>ID:</strong> ${emp.id}</p>
+        <p><strong>Name:</strong> ${emp.name}</p>
+        <p><strong>Type:</strong> ${emp.type}</p>
+        <p><strong>Start Date:</strong> ${emp.startDate}</p>
+        <p><strong>Trained:</strong> ${emp.trained}</p>
+        <p><strong>Qualification:</strong> ${emp.qualification}</p>`;
+      overlay.style.display='flex';
+    }
+
+    const editOverlay = document.getElementById('edit-modal-overlay');
+    const editForm = document.getElementById('edit-form');
+    document.getElementById('edit-modal-close').addEventListener('click', ()=>editOverlay.style.display='none');
+    editOverlay.addEventListener('click', e => { if(e.target===editOverlay) editOverlay.style.display='none'; });
+
+    function editEmployee(id) {
+      const emp = employees.find(e => e.id === id);
+      document.getElementById('edit-id').value = emp.id;
+      document.getElementById('edit-name').value = emp.name;
+      document.getElementById('edit-type').value = emp.type;
+      document.getElementById('edit-startDate').value = emp.startDate;
+      document.getElementById('edit-trained').value = emp.trained;
+      document.getElementById('edit-qualification').value = emp.qualification;
+      editOverlay.style.display = 'flex';
+    }
+
+    editForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const id = document.getElementById('edit-id').value;
+      const emp = employees.find(e => e.id === id);
+      emp.name = document.getElementById('edit-name').value;
+      emp.type = document.getElementById('edit-type').value;
+      emp.startDate = document.getElementById('edit-startDate').value;
+      emp.trained = document.getElementById('edit-trained').value;
+      emp.qualification = document.getElementById('edit-qualification').value;
+      updateFilteredEmployeesAfterEdit(emp);
+      renderEmployees(currentFilteredEmployees);
+      editOverlay.style.display = 'none';
+    });
+
+    function deleteEmployee(id){
+      if(confirm(`Are you sure you want to delete employee ${id}?`)){
+        const index = employees.findIndex(e => e.id === id);
+        if(index !== -1){
+          employees.splice(index,1);
+          updateFilteredEmployeesAfterDelete(id);
+          renderEmployees(currentFilteredEmployees);
+        }
+      }
+    }
+
+    // Keep filtered list updated on edit/delete
+    function updateFilteredEmployeesAfterEdit(editedEmp){
+      const idx = currentFilteredEmployees.findIndex(e => e.id === editedEmp.id);
+      if(idx !== -1){
+        currentFilteredEmployees[idx] = editedEmp;
+      }
+    }
+
+    function updateFilteredEmployeesAfterDelete(id){
+      currentFilteredEmployees = currentFilteredEmployees.filter(e => e.id !== id);
+    }
+
+    document.getElementById('apply-filters').addEventListener('click', () => {
+      const typeFilter = document.getElementById('filter-type').value.toLowerCase();
+      const trainedFilter = document.getElementById('filter-trained').value.toLowerCase();
+      const startDateFilter = document.getElementById('filter-start-date').value;
+
+      currentFilteredEmployees = employees.filter(emp => {
+        // Filter by type
+        if (typeFilter !== 'all' && emp.type.toLowerCase() !== typeFilter) return false;
+
+        // Filter by trained
+        if (trainedFilter !== 'all' && emp.trained.toLowerCase() !== trainedFilter) return false;
+
+        // Filter by start date (on or after)
+        if (startDateFilter) {
+          if (emp.startDate < startDateFilter) return false;
+        }
+        return true;
+      });
+
+      renderEmployees(currentFilteredEmployees);
+    });
+
+    document.getElementById('add-employee').addEventListener('click', () => {
+      document.getElementById('add-form').reset();
+      document.getElementById('add-modal-overlay').style.display = 'flex';
+    });
+
+    const addOverlay = document.getElementById('add-modal-overlay');
+    const addForm = document.getElementById('add-form');
+    document.getElementById('add-modal-close').addEventListener('click', ()=>addOverlay.style.display='none');
+    addOverlay.addEventListener('click', e => { if(e.target===addOverlay) addOverlay.style.display='none'; });
+
+    addForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const newEmp = {
+        id: document.getElementById('add-id').value,
+        name: document.getElementById('add-name').value,
+        type: document.getElementById('add-type').value,
+        startDate: document.getElementById('add-startDate').value,
+        trained: document.getElementById('add-trained').value,
+        qualification: document.getElementById('add-qualification').value
+      };
+      employees.push(newEmp);
+      // Re-apply current filters after adding new employee
+      document.getElementById('apply-filters').click();
+      addOverlay.style.display = 'none';
+    });
+
+    // Export dropdown logic
+    const exportBtn = document.getElementById('exportBtn');
+    const exportDropdown = document.getElementById('exportDropdown');
+
+    exportBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      exportDropdown.style.display = exportDropdown.style.display === 'block' ? 'none' : 'block';
+    });
+
+    document.addEventListener('click', () => {
+      exportDropdown.style.display = 'none';
+    });
+
+    function exportToCSV(data) {
+      const headers = ['ID','Name','Type','Start Date','Trained','Qualification'];
+      const csvRows = [];
+      csvRows.push(headers.join(','));
+      data.forEach(emp => {
+        const row = [
+          `"${emp.id}"`,
+          `"${emp.name}"`,
+          `"${emp.type}"`,
+          `"${emp.startDate}"`,
+          `"${emp.trained}"`,
+          `"${emp.qualification}"`
+        ];
+        csvRows.push(row.join(','));
+      });
+      return csvRows.join('\n');
+    }
+
+    document.getElementById('exportCsv').addEventListener('click', e => {
+      e.preventDefault();
+      const csvData = exportToCSV(currentFilteredEmployees);
+      const blob = new Blob([csvData], {type:'text/csv'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'employees.csv';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      exportDropdown.style.display = 'none';
+    });
+
+    document.getElementById('exportPdf').addEventListener('click', e => {
+      e.preventDefault();
+      const doc = new jsPDF();
+      const headers = [['ID', 'Name', 'Type', 'Start Date', 'Trained', 'Qualification']];
+      const rows = currentFilteredEmployees.map(emp => [
+        emp.id,
+        emp.name,
+        emp.type,
+        emp.startDate,
+        emp.trained,
+        emp.qualification
+      ]);
+      doc.autoTable({
+        head: headers,
+        body: rows,
+        startY: 10,
+      });
+      doc.save('employees.pdf');
+      exportDropdown.style.display = 'none';
+    });
+
+    // Load jsPDF autotable plugin from CDN (needed for table export)
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js';
+    script.onload = () => renderEmployees(employees);
+    document.head.appendChild(script);
+  </script>
+</body>
+</html>
