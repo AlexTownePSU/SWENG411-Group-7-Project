@@ -261,10 +261,11 @@
       const tbody=document.getElementById('employee-body');
       tbody.innerHTML='';
       list.forEach(emp=>{
+        const hireDate = new Date(emp.hire_date).toISOString().slice(0,10);
         const tr=document.createElement('tr');
         tr.innerHTML=`
           <!--<td>${emp._id}</td>--><td>${emp.employee_name}</td><td>${emp.type}</td><td>${emp.job_title}</td>
-          <td>${emp.hire_date}</td><td>${emp.active}</td><td>${emp.trained}</td><td>${emp.qualification}</td>
+          <td>${hireDate}</td><td>${emp.active}</td><td>${emp.trained}</td><td>${emp.qualification}</td>
           <td>
             <button class="action-btn" onclick="viewDetails('${emp._id}')">View</button>
             <button class="action-btn" onclick="editEmployee('${emp._id}')">Edit</button>
