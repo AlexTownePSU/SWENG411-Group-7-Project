@@ -261,6 +261,7 @@
       const tbody=document.getElementById('employee-body');
       tbody.innerHTML='';
       list.forEach(emp=>{
+        // Format hire_date to ISO string for consistency with system design
         emp.hire_date = new Date(emp.hire_date).toISOString().slice(0,10);
         const tr=document.createElement('tr');
         tr.innerHTML=`
