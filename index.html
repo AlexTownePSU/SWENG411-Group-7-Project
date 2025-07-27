@@ -132,8 +132,8 @@
       <table>
         <thead>
           <tr>
-            <th>ID</th><th>Name</th><th>Type</th><th>Start Date</th>
-            <th>Trained</th><th>Qualification</th><th>Actions</th>
+            <!--<th>ID</th>--><th>Name</th><th>Type</th><th>Job Title</th><th>Start Date</th>
+            <th>Active</th><th>Trained</th><th>Qualification</th><th>Actions</th>
           </tr>
         </thead>
         <tbody id="employee-body"></tbody>
@@ -156,7 +156,7 @@
       <span class="modal-close" id="edit-modal-close">&times;</span>
       <h3>Edit Employee</h3>
       <form id="edit-form">
-        <label>ID: <input type="text" id="edit-id" readonly></label><br><br>
+        <label>ID: <span id="edit-id"></p></label><br><br>
         <label>Name: <input type="text" id="edit-name"></label><br><br>
         <label>Type:
           <select id="edit-type">
@@ -164,7 +164,9 @@
             <option value="Part-Time">Part-Time</option>
           </select>
         </label><br><br>
-        <label>Start Date: <input type="date" id="edit-startDate"></label><br><br>
+        <label>Job Title: <input type="text" id="edit-title"></type></label><br><br>
+        <label>Start Date: <input type="date" id="edit-hire_date"></label><br><br>
+        <label>Active: <input type="checkbox" id="edit-active"></label><br><br>
         <label>Trained:
           <select id="edit-trained">
             <option value="Yes">Yes</option>
@@ -183,7 +185,7 @@
       <span class="modal-close" id="add-modal-close">&times;</span>
       <h3>Add New Employee</h3>
       <form id="add-form">
-        <label>ID: <input type="text" id="add-id" required></label><br><br>
+        <!-- <label>ID: <input type="text" id="add-id" required></label><br><br> ID generated in database -->
         <label>Name: <input type="text" id="add-name" required></label><br><br>
         <label>Type:
           <select id="add-type">
@@ -191,7 +193,9 @@
             <option value="Part-Time">Part-Time</option>
           </select>
         </label><br><br>
-        <label>Start Date: <input type="date" id="add-startDate" required></label><br><br>
+        <label>Title: <input type="text" id="add-title" required></label><br><br>
+        <label>Start Date: <input type="date" id="add-hire_date" required></label><br><br>
+        <label>Active: <input type="checkbox" id="add-active" checked readonly></label><br><br>
         <label>Trained:
           <select id="add-trained">
             <option value="Yes">Yes</option>
@@ -216,13 +220,42 @@
       document.getElementById('userDropdown').style.display='none';
     });
 
-    const employees=[
-      {id:'jsmith.1001',name:'John Smith',type:'Full-Time',startDate:'2021-04-12',trained:'Yes',qualification:'Qualified'},
-      {id:'adoe.1002',name:'Amanda Doe',type:'Part-Time',startDate:'2022-09-05',trained:'No',qualification:'In Training'},
-      {id:'bwilliams.1003',name:'Bruce Williams',type:'Full-Time',startDate:'2023-02-20',trained:'Yes',qualification:'Qualified'}
-    ];
+    // const employees=[
+    //   {id:'jsmith.1001',name:'John Smith',type:'Full-Time',hire_date:'2021-04-12',trained:'Yes',qualification:'Qualified'},
+    //   {id:'adoe.1002',name:'Amanda Doe',type:'Part-Time',hire_date:'2022-09-05',trained:'No',qualification:'In Training'},
+    //   {id:'bwilliams.1003',name:'Bruce Williams',type:'Full-Time',hire_date:'2023-02-20',trained:'Yes',qualification:'Qualified'}
+    // ];
 
-    let currentFilteredEmployees = [...employees];
+    // Initial empty employee list to be fetched from API
+    var employees = [] 
+
+    async function getEmployee(list) {
+      try {
+        const res = await fetch(`/api/GetEmployees`);
+        console.log('API URL: ', res);
+        if (!res.ok) throw new Error('Fetch Failed');
+
+        const data = await res.json();
+        if(data.length !== 0) {
+          list.length = 0;      // Clear original list
+          list.push(...data);   // Push new data into the original list
+          applyFilters();       // Re-apply filters after fetching new data the first time
+          // Log list to see the fetched data
+          console.log('Fetched employee list: ', list);
+        }
+      } catch(err) {
+        console.error(err);
+      }
+    }
+
+    // Async function to fetch employees and log current filtered employees
+    (async ()=> {
+      await getEmployee(employees);
+      let currentFilteredEmployees = [...employees];
+      // Log currentlyFilteredEmployees
+      console.log('Current filtered employees: ', currentFilteredEmployees);
+    })();
+    
 
     function renderEmployees(list){
       const tbody=document.getElementById('employee-body');
@@ -230,12 +263,12 @@
       list.forEach(emp=>{
         const tr=document.createElement('tr');
         tr.innerHTML=`
-          <td>${emp.id}</td><td>${emp.name}</td><td>${emp.type}</td>
-          <td>${emp.startDate}</td><td>${emp.trained}</td><td>${emp.qualification}</td>
+          <!--<td>${emp._id}</td>--><td>${emp.employee_name}</td><td>${emp.type}</td><td>${emp.job_title}</td>
+          <td>${emp.hire_date}</td><td>${emp.active}</td><td>${emp.trained}</td><td>${emp.qualification}</td>
           <td>
-            <button class="action-btn" onclick="viewDetails('${emp.id}')">View</button>
-            <button class="action-btn" onclick="editEmployee('${emp.id}')">Edit</button>
-            <button class="action-btn" onclick="deleteEmployee('${emp.id}')">Delete</button>
+            <button class="action-btn" onclick="viewDetails('${emp._id}')">View</button>
+            <button class="action-btn" onclick="editEmployee('${emp._id}')">Edit</button>
+            <button class="action-btn" onclick="deleteEmployee('${emp._id}')">Delete</button>
           </td>`;
         tbody.appendChild(tr);
       });
@@ -247,12 +280,17 @@
     overlay.addEventListener('click',e=>{if(e.target===overlay) overlay.style.display='none';});
 
     function viewDetails(id){
-      const emp=employees.find(e=>e.id===id);
+      const emp=employees.find(e=>e._id===id);
+      if(emp) {
+        console.log('Viewing details for employee:', emp);
+      }
       modalContent.innerHTML=`
-        <p><strong>ID:</strong> ${emp.id}</p>
-        <p><strong>Name:</strong> ${emp.name}</p>
+        <p><strong>ID:</strong> ${emp._id}</p>
+        <p><strong>Name:</strong> ${emp.employee_name}</p>
         <p><strong>Type:</strong> ${emp.type}</p>
-        <p><strong>Start Date:</strong> ${emp.startDate}</p>
+        <p><strong>Job Title:</strong> ${emp.job_title}</p>
+        <p><strong>Start Date:</strong> ${emp.hire_date}</p>
+        <p><strong>Active:</strong> ${emp.active ? 'Yes' : 'No'}</p>
         <p><strong>Trained:</strong> ${emp.trained}</p>
         <p><strong>Qualification:</strong> ${emp.qualification}</p>`;
       overlay.style.display='flex';
@@ -264,11 +302,13 @@
     editOverlay.addEventListener('click', e => { if(e.target===editOverlay) editOverlay.style.display='none'; });
 
     function editEmployee(id) {
-      const emp = employees.find(e => e.id === id);
-      document.getElementById('edit-id').value = emp.id;
-      document.getElementById('edit-name').value = emp.name;
+      const emp = employees.find(e => e._id === id);
+      document.getElementById('edit-id').innerText = emp._id;
+      document.getElementById('edit-name').value = emp.employee_name;
       document.getElementById('edit-type').value = emp.type;
-      document.getElementById('edit-startDate').value = emp.startDate;
+      document.getElementById('edit-title').value = emp.job_title;
+      document.getElementById('edit-hire_date').value = emp.hire_date;
+      document.getElementById('edit-active').checked = emp.active;
       document.getElementById('edit-trained').value = emp.trained;
       document.getElementById('edit-qualification').value = emp.qualification;
       editOverlay.style.display = 'flex';
@@ -276,45 +316,91 @@
 
     editForm.addEventListener('submit', e => {
       e.preventDefault();
-      const id = document.getElementById('edit-id').value;
-      const emp = employees.find(e => e.id === id);
-      emp.name = document.getElementById('edit-name').value;
+      const id = document.getElementById('edit-id').innerText; // Get the ID from the employee object;
+      const emp = employees.find(e => e._id === id);
+      console.log('Editing employee pre-values: ', emp);
+      emp.employee_name = document.getElementById('edit-name').value;
       emp.type = document.getElementById('edit-type').value;
-      emp.startDate = document.getElementById('edit-startDate').value;
+      emp.job_title = document.getElementById('edit-title').value;
+      emp.hire_date = document.getElementById('edit-hire_date').value;
+      emp.active = document.getElementById('edit-active').checked;
       emp.trained = document.getElementById('edit-trained').value;
       emp.qualification = document.getElementById('edit-qualification').value;
-      updateFilteredEmployeesAfterEdit(emp);
-      renderEmployees(currentFilteredEmployees);
+      
+      (async () => {
+        await postUpdatedEmployee(emp);
+        console.log('Post update employee values:', emp);
+        // Update the filtered list and re-render after employee edit finishes
+        updateFilteredEmployeesAfterEdit(emp);
+        renderEmployees(currentFilteredEmployees);
       editOverlay.style.display = 'none';
+      })();
     });
+
+    async function postUpdatedEmployee(emp) {
+      try {
+        const response = await fetch(`/api/UpdateEmployees/${emp._id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(emp)
+        });
+        console.log('JSON String submitted: ', JSON.stringify(emp));
+
+        if (!response.ok) throw new Error('Failed to update employee');
+        console.log('Employee updated successfully:', emp);
+      } catch (error) {
+        console.error('Error updating employee:', error);
+      }
+    }
 
     function deleteEmployee(id){
       if(confirm(`Are you sure you want to delete employee ${id}?`)){
-        const index = employees.findIndex(e => e.id === id);
+        const index = employees.findIndex(e => e._id === id);
         if(index !== -1){
-          employees.splice(index,1);
-          updateFilteredEmployeesAfterDelete(id);
-          renderEmployees(currentFilteredEmployees);
+          // employees.splice(index,1);
+          // Wait for a return from the delete API before updating list
+          (async () => {
+            await deleteEmployeeRecord(employees[index]._id);
+            getEmployee(employees); // Refresh employee list after deletion
+          // updateFilteredEmployeesAfterDelete(id);
+          // renderEmployees(currentFilteredEmployees);
+          })();
+          console.log(`Employee ${id} deleted successfully`);
         }
+      }
+    }    
+
+    async function deleteEmployeeRecord(id) {
+      try {
+        const response = await fetch(`/api/DeleteEmployees/${id}`, {
+          method: 'DELETE'
+        });
+        if (!response.ok) throw new Error('Failed to delete employee');
+        console.log(`Employee ${id} deleted successfully`);
+      } catch (error) {
+        console.error('Error deleting employee:', error);
       }
     }
 
     // Keep filtered list updated on edit/delete
     function updateFilteredEmployeesAfterEdit(editedEmp){
-      const idx = currentFilteredEmployees.findIndex(e => e.id === editedEmp.id);
+      const idx = currentFilteredEmployees.findIndex(e => e._id === editedEmp.id);
       if(idx !== -1){
         currentFilteredEmployees[idx] = editedEmp;
       }
     }
 
     function updateFilteredEmployeesAfterDelete(id){
-      currentFilteredEmployees = currentFilteredEmployees.filter(e => e.id !== id);
+      currentFilteredEmployees = currentFilteredEmployees.filter(e => e._id !== id);
     }
 
-    document.getElementById('apply-filters').addEventListener('click', () => {
+    // Call this to filter employees with selected criteria on button click or when a function updates data
+    function applyFilters() {
       const typeFilter = document.getElementById('filter-type').value.toLowerCase();
       const trainedFilter = document.getElementById('filter-trained').value.toLowerCase();
-      const startDateFilter = document.getElementById('filter-start-date').value;
+      const hire_dateFilter = document.getElementById('filter-start-date').value;
 
       currentFilteredEmployees = employees.filter(emp => {
         // Filter by type
@@ -324,14 +410,17 @@
         if (trainedFilter !== 'all' && emp.trained.toLowerCase() !== trainedFilter) return false;
 
         // Filter by start date (on or after)
-        if (startDateFilter) {
-          if (emp.startDate < startDateFilter) return false;
+        if (hire_dateFilter) {
+          if (emp.hire_date < hire_dateFilter) return false;
         }
         return true;
       });
 
       renderEmployees(currentFilteredEmployees);
-    });
+    }
+
+    // Apply filters on button click
+    document.getElementById('apply-filters').addEventListener('click', applyFilters);
 
     document.getElementById('add-employee').addEventListener('click', () => {
       document.getElementById('add-form').reset();
@@ -346,10 +435,12 @@
     addForm.addEventListener('submit', e => {
       e.preventDefault();
       const newEmp = {
-        id: document.getElementById('add-id').value,
-        name: document.getElementById('add-name').value,
+        // id: document.getElementById('add-id').value, // ID is auto-generated from database
+        employee_name: document.getElementById('add-name').value,
+        active: document.getElementById('add-active').checked,  // active is a checkbox and always true by default
         type: document.getElementById('add-type').value,
-        startDate: document.getElementById('add-startDate').value,
+        job_title: document.getElementById('add-title').value,
+        hire_date: document.getElementById('add-hire_date').value,
         trained: document.getElementById('add-trained').value,
         qualification: document.getElementById('add-qualification').value
       };
@@ -378,10 +469,11 @@
       csvRows.push(headers.join(','));
       data.forEach(emp => {
         const row = [
-          `"${emp.id}"`,
-          `"${emp.name}"`,
+          `"${emp._id}"`,
+          `"${emp.employee_name}"`,
           `"${emp.type}"`,
-          `"${emp.startDate}"`,
+          `"${emp.hire_date}"`,
+          `"${emp.active}"`,
           `"${emp.trained}"`,
           `"${emp.qualification}"`
         ];
@@ -409,10 +501,10 @@
       const doc = new jsPDF();
       const headers = [['ID', 'Name', 'Type', 'Start Date', 'Trained', 'Qualification']];
       const rows = currentFilteredEmployees.map(emp => [
-        emp.id,
+        emp._id,
         emp.name,
         emp.type,
-        emp.startDate,
+        emp.hire_date,
         emp.trained,
         emp.qualification
       ]);

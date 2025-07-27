@@ -80,13 +80,16 @@ router.post('/SubmitEmployees', async (req, res) => {
     const db = await connectToDatabase();
     const collection = db.collection('employees');
 
-    const { employee_name, hire_date, job_title, active } = req.body;
+    const { employee_name, hire_date, job_title, active, type, trained, qualification } = req.body;
 
     const newEmployee = {
       employee_name,
       hire_date: new Date(hire_date),
       job_title,
-      active
+      active,
+      type,
+      trained,
+      qualification
     };
 
     const result = await collection.insertOne(newEmployee);
@@ -102,13 +105,16 @@ router.put('/UpdateEmployees/:id', async (req, res) => {
     const collection = db.collection('employees');
 
     const employeeId = req.params.id;
-    const { employee_name, hire_date, job_title, active } = req.body;
+    const { employee_name, hire_date, job_title, active, type, trained, qualification } = req.body;
 
     const updatedEmployee = {
       employee_name,
       hire_date: new Date(hire_date),
       job_title,
-      active
+      active,
+      type,
+      trained,
+      qualification
     };
     const result = await collection.updateOne(
       { _id: new ObjectId(employeeId) },
@@ -129,6 +135,12 @@ router.delete('/DeleteEmployees/:id', async (req, res) => {
 
     const employeeId = req.params.id;
     const result = await collection.deleteOne({ _id: new ObjectId(employeeId) });
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+    else {
+      res.status(200).json({ message: 'Employee deleted successfully' });
+    }
   } catch (error) {
     console.error('Delete error:', error.stack);
     return res.status(500).json({ error: 'Failed to delete employee', details: error.message });
