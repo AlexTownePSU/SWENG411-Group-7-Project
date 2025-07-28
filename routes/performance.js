@@ -64,4 +64,105 @@ router.get('/GetPerformanceRatings', async (req, res) => {
     }
 });
 
+router.post('/SubmitPerformance', async (req, res) => {
+    try {
+        const db = await connectToDatabase();
+        const collection = db.collection('performance_rating');
+
+        // Validate request body
+        const { employee_id, review_date, rating } = req.body;
+        if (!employee_id || !review_date || rating === undefined) {
+            return res.status(400).json({ message: 'Missing required fields' });
+        }
+
+        // Validate employee_id format
+        if (!ObjectId.isValid(employee_id)) {
+            return res.status(400).json({ message: 'Invalid employee_id format' });
+        }
+
+        // Validate rating
+        if (isNaN(rating) || rating < 1 || rating > 5) {
+            return res.status(400).json({ message: 'Rating must be a number between 1 and 5' });
+        }
+
+        // Create new performance record
+        const newPerformance = {
+            employee_id: new ObjectId(employee_id),
+            review_date: new Date(review_date),
+            rating: parseInt(rating)
+        };
+
+        // Insert new performance record into the collection
+        const result = await collection.insertOne(newPerformance);
+        res.status(201).json({ message: 'Performance record created', id: result.insertedId });
+    } catch (error) {
+        console.error('Error submitting performance:', error);
+        res.status(500).json({ message: 'Internal server error', error });
+    }
+});
+
+router.put('/UpdatePerformance/:id', async (req, res) => {
+    try {
+        const db = await connectToDatabase();
+        const collection = db.collection('performance_rating');
+
+        const performanceId = req.params.id;
+        const { employee_id, review_date, rating } = req.body;
+
+        // Validate request body
+        if (!employee_id || !review_date || rating === undefined) {
+            return res.status(400).json({ message: 'Missing required fields' });
+        }
+
+        // Validate employee_id format
+        if (!ObjectId.isValid(employee_id)) {
+            return res.status(400).json({ message: 'Invalid employee_id format' });
+        }
+
+        // Validate rating
+        if (isNaN(rating) || rating < 1 || rating > 100) {
+            return res.status(400).json({ message: 'Rating must be a number between 1 and 100' });
+        }
+
+        const updatedPerformance = {
+            employee_id: new ObjectId(employee_id),
+            review_date: new Date(review_date),
+            rating: parseInt(rating)
+        };
+
+        const result = await collection.updateOne(
+            { _id: new ObjectId(performanceId) },
+            { $set: updatedPerformance }
+        );
+
+        if (result.modifiedCount === 0) {
+            return res.status(404).json({ message: 'Performance record not found or no changes made' });
+        }
+
+        res.json({ message: 'Performance record updated successfully' });
+    } catch (error) {
+        console.error('Update error:', error.stack);
+        res.status(500).json({ error: 'Failed to update performance record', details: error.message });
+    }
+});
+
+router.delete('/DeletePerformance/:id', async (req, res) => {
+    try {
+        const db = await connectToDatabase();
+        const collection = db.collection('performance_rating');
+
+        const performanceId = req.params.id;
+        const result = await collection.deleteOne({ _id: new ObjectId(performanceId) });
+        
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ message: 'Performance record not found' });
+        }
+        
+        res.status(200).json({ message: 'Performance record deleted successfully' });
+    } catch (error) {
+        console.error('Delete error:', error.stack);
+        res.status(500).json({ error: 'Failed to delete performance record', details: error.message });
+    }
+});
+
 module.exports = router;

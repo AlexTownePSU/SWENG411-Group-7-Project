@@ -51,12 +51,22 @@
     button:hover,.action-btn:hover{background:#0056b3;transform:translateY(-1px);}
     .action-btn{padding:.3rem .6rem;font-size:.9rem;}
     .modal-overlay{
-      display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);
-      align-items:center;justify-content:center;z-index:1000;
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.5);
+      align-items:center;
+      justify-content:center;
+      z-index:1000;
     }
     .modal{
-      position:relative;background:#fff;padding:2rem;border-radius:8px;
-      width:90%;max-width:500px;box-shadow:0 4px 12px rgba(0,0,0,.3);
+      position:relative;
+      background:#fff;
+      padding:2rem;
+      border-radius:8px;
+      width:90%;
+      max-width:500px;
+      box-shadow:0 4px 12px rgba(0,0,0,.3);
       animation:fadeIn .25s ease;
     }
     .modal-close{
@@ -133,7 +143,7 @@
       <table>
         <thead>
           <tr>
-            <!--<th>ID</th>--><th>Name</th><th>Type</th><th>Job Title</th><th>Start Date</th>
+            <th>Name</th><th>Type</th><th>Job Title</th><th>Start Date</th>
             <th>Active</th><th>Trained</th><th>Qualification</th><th>Actions</th>
           </tr>
         </thead>
@@ -156,6 +166,7 @@
         </thead>
         <tbody id="performance-content"></tbody>
       </table>
+    </div>
   </div>
 
   <!-- Edit Employee Modal -->
@@ -167,7 +178,7 @@
         <table id="edit-form-table">
           <tr>
             <td>
-              <label for="edit-id">ID:</label>
+              <span>ID:</span>
             </td>
             <td>
               <span id="edit-id"></p>
@@ -311,6 +322,7 @@
 
     // Initial empty employee list to be fetched from API
     var employees = [] 
+    var currentFilteredEmployees = []; 
 
     async function getEmployee(list) {
       try {
@@ -334,7 +346,7 @@
     // Async function to fetch employees and log current filtered employees
     (async ()=> {
       await getEmployee(employees);
-      let currentFilteredEmployees = [...employees];
+      currentFilteredEmployees = [...employees];
       // Log currentlyFilteredEmployees
       console.log('Current filtered employees: ', currentFilteredEmployees);
     })();
@@ -368,10 +380,14 @@
     // Initialize performance ratings array
     var performance_ratings = [];
 
-    function viewDetails(id){
+    async function viewDetails(id){
       const emp=employees.find(e=>e._id===id);
       if(emp) {
         console.log('Viewing details for employee:', emp);
+      }
+      if(!emp) {
+        console.error('Employee not found for ID:', id);
+        return;
       }
       modalContent.innerHTML=`
         <p><strong>ID:</strong> ${emp._id}</p>
@@ -382,11 +398,16 @@
         <p><strong>Active:</strong> ${emp.active ? 'Yes' : 'No'}</p>
         <p><strong>Trained:</strong> ${emp.trained}</p>
         <p><strong>Qualification:</strong> ${emp.qualification}</p>`;
+        
       overlay.style.display='flex';
-      
-      getPerformanceRatings(performance_ratings, {employee_id : `${emp._id}`}).then(() => {
-        renderPerformanceDetails(performance_ratings, emp._id);
-      });
+      try {
+      // Fetch performance ratings before rendering them
+      await getPerformanceRatings(performance_ratings, { employee_id: emp._id });
+      renderPerformanceDetails(performance_ratings, emp._id);
+      } catch (error) {
+        console.error('Error fetching/rendering performance ratings:', error);
+        performanceContent.innerHTML = `<tr><td colspan="2">Performance data unavailable</td></tr>`;
+      }
     }
 
     // Fetch performance ratings from API
@@ -409,6 +430,7 @@
 
         if(data.length !== 0) {
           list.length = 0;      // Clear original list
+          if(list.length === 0) console.log('Performance ratings list cleared');
           list.push(...data);   // Push new data into the original list
           console.log('Performance ratings fetched:', performance_ratings);
         }
@@ -420,16 +442,22 @@
     // Function to view all performance details of a single employee
     function renderPerformanceDetails(list, emp_id) {
       const tbody=document.getElementById('performance-content');
-      const perf=performance_ratings.find(e => e.employee_id === emp_id);
-      if (list.length > 0) {
+
+      tbody.innerHTML=''; // Clear previous performance details
+      const perf=performance_ratings.filter(e => e.employee_id === emp_id);
+      if (perf.length === 0) {
+        // Show blank row or message when no results
+        tbody.innerHTML = `<tr><td colspan="2">No performance ratings found for this employee.</td></tr>`;
+        return;
+      }
+
+      if (perf.length > 0) {
         list.forEach(perf => {
           perf.review_date = new Date(perf.review_date).toISOString().slice(0,10);
           const tr=document.createElement('tr');
           tr.innerHTML =`
-                <tr>
-                  <td><span>${perf.rating}</span></td>
-                  <td><span>${perf.review_date}</span></td>
-                </tr>
+            <td><span>${perf.rating}</span></td>
+            <td><span>${perf.review_date}</span></td>
           `
           tbody.appendChild(tr);
         });
@@ -499,13 +527,10 @@
       if(confirm(`Are you sure you want to delete employee ${id}?`)){
         const index = employees.findIndex(e => e._id === id);
         if(index !== -1){
-          // employees.splice(index,1);
           // Wait for a return from the delete API before updating list
           (async () => {
             await deleteEmployeeRecord(employees[index]._id);
             getEmployee(employees); // Refresh employee list after deletion
-          // updateFilteredEmployeesAfterDelete(id);
-          // renderEmployees(currentFilteredEmployees);
           })();
           console.log(`Employee ${id} deleted successfully`);
         }

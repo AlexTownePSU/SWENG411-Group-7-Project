@@ -5,6 +5,7 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 const employeesRoute = require('./routes/employees');
 const performanceRoute = require('./routes/performance');
 const usersRoute = require('./routes/users'); // Import user routes
+const trainingRoute = require('./routes/training'); // Import training routes
 const connectToDatabase = require('./db/db.js');
 
 
@@ -36,9 +37,11 @@ const client = new MongoClient(uri, {
 // API endpoints
 app.use(express.json());	// Allows for parsing JSON bodies
 app.use(express.urlencoded({ extended: true }));
-app.use('/api/employees', employeesRoute);	// Include employee API routes
+app.use('/api/employees', employeesRoute);		// Include employee API routes
 app.use('/api/performance', performanceRoute);	// Include performance API routes
-app.use('/api/users', usersRoute);	// Include user API routes
+app.use('/api/users', usersRoute);				// Include user API routes
+app.use('/api/training', trainingRoute);		// Include training API routes
+
 // Connect to DB then Start server
 connectToDatabase().then(() => {
 	app.listen(port, hostname, () => {
