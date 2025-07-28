@@ -3,6 +3,7 @@ const path = require('path');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const employeesRoute = require('./routes/employees');
+const performanceRoute = require('./routes/performance');
 const connectToDatabase = require('./db/db.js');
 
 
@@ -34,7 +35,9 @@ const client = new MongoClient(uri, {
 // API endpoints
 app.use(express.json());	// Allows for parsing JSON bodies
 app.use(express.urlencoded({ extended: true }));
-app.use('/api', employeesRoute);	// Include employee API routes
+app.use('/api/employees', employeesRoute);	// Include employee API routes
+app.use('/api/performance', performanceRoute);	// Include performance API routes
+console.log(typeof performanceRoute); // should be 'function'
 
 // Connect to DB then Start server
 connectToDatabase().then(() => {

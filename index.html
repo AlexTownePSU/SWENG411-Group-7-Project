@@ -101,13 +101,14 @@
       </label>
       <label>Start Date: <input type="date" id="filter-start-date"></label>
       <button id="apply-filters">Apply Filters</button>
-      <button id="add-employee">Add Employee</button>
+      <!--<button id="add-employee">Add Employee</button>-->
     </div>
 
     <div class="employee-table">
       <h2 style="display:flex; align-items:center; justify-content:space-between;">
         Employee Summary
         <div style="position:relative;">
+          <button id="add-employee">Add Employee</button>
           <button id="exportBtn" style="padding:.5rem 1rem; background:#007bff; color:#fff; border:none; border-radius:4px; cursor:pointer;">
             Export ▼
           </button>
@@ -147,7 +148,14 @@
       <span class="modal-close" id="modal-close">&times;</span>
       <h3>Employee Details</h3>
       <div id="modal-content"></div>
-    </div>
+      <h3>Performance Details</h3>
+      <table id="performance-table">
+        <thead>
+          <th>Rating</th>
+          <th>Review Date</th>
+        </thead>
+        <tbody id="performance-content"></tbody>
+      </table>
   </div>
 
   <!-- Edit Employee Modal -->
@@ -156,25 +164,79 @@
       <span class="modal-close" id="edit-modal-close">&times;</span>
       <h3>Edit Employee</h3>
       <form id="edit-form">
-        <label>ID: <span id="edit-id"></p></label><br><br>
-        <label>Name: <input type="text" id="edit-name"></label><br><br>
-        <label>Type:
-          <select id="edit-type">
-            <option value="Full-Time">Full-Time</option>
-            <option value="Part-Time">Part-Time</option>
-          </select>
-        </label><br><br>
-        <label>Job Title: <input type="text" id="edit-title"></type></label><br><br>
-        <label>Start Date: <input type="date" id="edit-hire_date"></label><br><br>
-        <label>Active: <input type="checkbox" id="edit-active"></label><br><br>
-        <label>Trained:
-          <select id="edit-trained">
-            <option value="Yes">Yes</option>
-            <option value="No">No</option>
-          </select>
-        </label><br><br>
-        <label>Qualification: <input type="text" id="edit-qualification"></label><br><br>
-        <button type="submit">Save</button>
+        <table id="edit-form-table">
+          <tr>
+            <td>
+              <label for="edit-id">ID:</label>
+            </td>
+            <td>
+              <span id="edit-id"></p>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="edit-name">Name:</label>
+            </td>
+            <td>
+              <input type="text" id="edit-name" required>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="edit-type">Type:</label>
+            </td>
+            <td>
+              <select id="edit-type">
+                <option value="Full-Time">Full-Time</option>
+                <option value="Part-Time">Part-Time</option>
+              </select>            
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="edit-title">Job Title:</label>
+            </td>
+            <td>
+              <input type="text" id="edit-title"></type>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="edit-hire_date">Start Date:</label><br><br>
+            </td>
+            <td>
+              <input type="date" id="edit-hire_date">
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="edit-active">Active:</label>
+            </td>
+            <td>
+              <input type="checkbox" id="edit-active">
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="edit-trained">Trained:</label>
+            </td>
+            <td>
+              <select id="edit-trained">
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td><label for="edit-qualification">Qualification:</label></td>
+            <td><input type="text" id="edit-qualification"></td>
+          </tr>
+          <tr>
+            <td>
+              <button type="submit">Save</button>
+            </td>
+          </tr>
+        </table>
       </form>
     </div>
   </div>
@@ -186,24 +248,45 @@
       <h3>Add New Employee</h3>
       <form id="add-form">
         <!-- <label>ID: <input type="text" id="add-id" required></label><br><br> ID generated in database -->
-        <label>Name: <input type="text" id="add-name" required></label><br><br>
-        <label>Type:
-          <select id="add-type">
-            <option value="Full-Time">Full-Time</option>
-            <option value="Part-Time">Part-Time</option>
-          </select>
-        </label><br><br>
-        <label>Title: <input type="text" id="add-title" required></label><br><br>
-        <label>Start Date: <input type="date" id="add-hire_date" required></label><br><br>
-        <label>Active: <input type="checkbox" id="add-active" checked readonly></label><br><br>
-        <label>Trained:
-          <select id="add-trained">
-            <option value="Yes">Yes</option>
-            <option value="No">No</option>
-          </select>
-        </label><br><br>
-        <label>Qualification: <input type="text" id="add-qualification"></label><br><br>
-        <button type="submit">Add Employee</button>
+         <table>
+          <tr>
+            <td><label for="add-name">Name:</label></td>
+            <td><input type="text" id="add-name" placeholder="First Last" required></td>
+          </tr>
+          <tr>
+            <td><label for="add-type">Type:</label></td>
+            <td>
+              <select id="add-type">
+                <option value="Full-Time">Full-Time</option>
+                <option value="Part-Time">Part-Time</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td><label for="add-title">Title:</label></td>
+            <td><input type="text" id="add-title" placeholder="Title" required></label><br><br></td>
+          </tr>
+          <tr>
+            <td><label for="add-hire_date">Start Date:</label></td>
+            <td><input type="date" id="add-hire_date" required></td>
+          </tr>
+          <tr>
+            <td><label for="add-trained">Trained:</label></td>
+            <td>
+              <select id="add-trained">
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td><label for="add-qualification">Qualification:</label></td>
+            <td><input type="text" id="add-qualification" placeholder="Qualified" required></td>
+          </tr>
+          <tr>
+            <td><button type="submit">Add Employee</button></td>
+          </tr>
+         </table>
       </form>
     </div>
   </div>
@@ -231,7 +314,7 @@
 
     async function getEmployee(list) {
       try {
-        const res = await fetch(`/api/GetEmployees`);
+        const res = await fetch(`/api/employees/GetEmployees`);
         console.log('API URL: ', res);
         if (!res.ok) throw new Error('Fetch Failed');
 
@@ -265,7 +348,7 @@
         emp.hire_date = new Date(emp.hire_date).toISOString().slice(0,10);
         const tr=document.createElement('tr');
         tr.innerHTML=`
-          <!--<td>${emp._id}</td>--><td>${emp.employee_name}</td><td>${emp.type}</td><td>${emp.job_title}</td>
+          <td>${emp.employee_name}</td><td>${emp.type}</td><td>${emp.job_title}</td>
           <td>${emp.hire_date}</td><td>${emp.active}</td><td>${emp.trained}</td><td>${emp.qualification}</td>
           <td>
             <button class="action-btn" onclick="viewDetails('${emp._id}')">View</button>
@@ -280,6 +363,10 @@
     const modalContent=document.getElementById('modal-content');
     document.getElementById('modal-close').addEventListener('click',()=>overlay.style.display='none');
     overlay.addEventListener('click',e=>{if(e.target===overlay) overlay.style.display='none';});
+
+    const performanceContent = document.getElementById('performance-content');
+    // Initialize performance ratings array
+    var performance_ratings = [];
 
     function viewDetails(id){
       const emp=employees.find(e=>e._id===id);
@@ -296,6 +383,57 @@
         <p><strong>Trained:</strong> ${emp.trained}</p>
         <p><strong>Qualification:</strong> ${emp.qualification}</p>`;
       overlay.style.display='flex';
+      
+      getPerformanceRatings(performance_ratings, {employee_id : `${emp._id}`}).then(() => {
+        renderPerformanceDetails(performance_ratings, emp._id);
+      });
+    }
+
+    // Fetch performance ratings from API
+    async function getPerformanceRatings(list, filters = {}) {
+      try {
+        const params = new URLSearchParams();
+
+        // Add filters to the URL parameters
+        for (const key in filters) {
+          if (filters[key] !== undefined && filters[key] !== null) params.append(key, filters[key]);
+        }
+
+        // Fetch performance ratings from the API passing parameters if we have any
+        const url = `/api/performance/GetPerformanceRatings${params.toString() ? `?${params}` : ''}`;
+        const res = await fetch(url);
+
+        if (!res.ok) throw new Error('Failed to fetch performance ratings');
+
+        const data = await res.json();
+
+        if(data.length !== 0) {
+          list.length = 0;      // Clear original list
+          list.push(...data);   // Push new data into the original list
+          console.log('Performance ratings fetched:', performance_ratings);
+        }
+      } catch (error) {
+        console.error('Error fetching performance ratings:', error);
+      }
+    }
+
+    // Function to view all performance details of a single employee
+    function renderPerformanceDetails(list, emp_id) {
+      const tbody=document.getElementById('performance-content');
+      const perf=performance_ratings.find(e => e.employee_id === emp_id);
+      if (list.length > 0) {
+        list.forEach(perf => {
+          perf.review_date = new Date(perf.review_date).toISOString().slice(0,10);
+          const tr=document.createElement('tr');
+          tr.innerHTML =`
+                <tr>
+                  <td><span>${perf.rating}</span></td>
+                  <td><span>${perf.review_date}</span></td>
+                </tr>
+          `
+          tbody.appendChild(tr);
+        });
+      }
     }
 
     const editOverlay = document.getElementById('edit-modal-overlay');
@@ -341,7 +479,7 @@
 
     async function postUpdatedEmployee(emp) {
       try {
-        const response = await fetch(`/api/UpdateEmployees/${emp._id}`, {
+        const response = await fetch(`/api/employees/UpdateEmployees/${emp._id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json'
@@ -376,7 +514,7 @@
 
     async function deleteEmployeeRecord(id) {
       try {
-        const response = await fetch(`/api/DeleteEmployees/${id}`, {
+        const response = await fetch(`/api/employees/DeleteEmployees/${id}`, {
           method: 'DELETE'
         });
         if (!response.ok) throw new Error('Failed to delete employee');
@@ -446,11 +584,29 @@
         trained: document.getElementById('add-trained').value,
         qualification: document.getElementById('add-qualification').value
       };
-      employees.push(newEmp);
-      // Re-apply current filters after adding new employee
-      document.getElementById('apply-filters').click();
+
+      // Post new employee to the database via the API
+      postNewEmployee(newEmp);
       addOverlay.style.display = 'none';
     });
+
+    // Add employee to the database
+    async function postNewEmployee(newEmp) {
+      try {
+        const response = await fetch('/api/SubmitEmployees', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(newEmp)
+        });
+        getEmployee(employees); // Refresh employee list after adding new employee
+        if (!response.ok) throw new Error('Failed to add new employee');
+        console.log('New employee added successfully:', newEmp);
+      } catch (error) {
+        console.error('Error adding new employee:', error);
+      }
+    }
 
     // Export dropdown logic
     const exportBtn = document.getElementById('exportBtn');
