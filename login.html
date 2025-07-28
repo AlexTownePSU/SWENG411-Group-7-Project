@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login • RaiseTracker</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to bottom right, #1f2a63, #f4f6fa);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .login-container {
+      background: #fff;
+      padding: 2.5rem 2rem;
+      border-radius: 12px;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+      max-width: 400px;
+      width: 100%;
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .login-header h1 {
+      margin: 0;
+      color: #1f2a63;
+      font-size: 1.8rem;
+      font-weight: bold;
+    }
+
+    .login-header p {
+      color: #6f7a94;
+      margin-top: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    form label {
+      display: block;
+      margin-top: 1.2rem;
+      color: #3f4a6b;
+      font-weight: 500;
+    }
+
+    form input {
+      width: 100%;
+      padding: 0.6rem;
+      margin-top: 0.5rem;
+      border: 1px solid #cfd4e1;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      color: #3f4a6b;
+    }
+
+    .login-btn {
+      width: 100%;
+      margin-top: 2rem;
+      padding: 0.75rem;
+      background: #3a4e9e;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .login-btn:hover {
+      background: #2d3e86;
+    }
+
+    .logo {
+      font-style: italic;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #3a4e9e;
+    }
+
+    .footer-text {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 0.85rem;
+      color: #7f8ba8;
+    }
+
+    @media (max-width: 500px) {
+      .login-container {
+        padding: 2rem 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-header">
+      <div class="logo">RaiseTracker★</div>
+      <p>Welcome back! Please login to your account</p>
+    </div>
+    <form id="login-form">
+      <label for="email">Email Address</label>
+      <input type="email" id="email" placeholder="you@example.com" required />
+
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="••••••••" required />
+
+      <button type="submit" class="login-btn">Login</button>
+    </form>
+    <div class="footer-text">
+      &copy; 2025 RaiseTracker. All rights reserved.
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('login-form').onsubmit = function (e) {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      alert(`Logging in as ${email}...`);
+      // Add authentication logic here
+    };
+  </script>
+</body>
+</html>
