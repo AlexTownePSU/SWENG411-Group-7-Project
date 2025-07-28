@@ -85,4 +85,35 @@ router.post('/SubmitUsers', async (req, res) => {
     }
 });
 
+router.post('/LoginUser', async (req, res) => {
+    try {
+        const db = await connectToDatabase();
+        const collection = db.collection('users');
+
+        // Validate request body
+        const { username, password } = req.body;
+        if (!username || !password) {
+            return res.status(400).json({ message: 'Missing username or password' });
+        }
+
+        // Find user by username
+        const user = await collection.findOne({ username: username.trim() });
+        if (!user) {
+            return res.status(401).json({ message: 'Invalid username or password' });
+        }
+
+        // Compare passwords
+        const isMatch = await bcrypt.compare(password.trim(), user.password);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Invalid username or password' });
+        }
+
+        // Successful login
+        res.status(200).json({ message: 'Login successful', userId: user._id });
+    } catch (error) {
+        console.error('Error during login:', error);
+        res.status(500).json({ message: 'Internal server error', error });
+    }
+});
+
 module.exports = router;
