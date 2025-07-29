@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Security Settings • RaiseTracker</title>
+  <style>
+    :root {
+      --bg-color: #f4f6fa;
+      --text-color: #1f2a63;
+      --panel-bg: #f7f8fc;
+      --hover-bg: #eef1f9;
+      --primary-color: #3a4e9e;
+      --modal-bg: rgba(0, 0, 0, 0.6);
+    }
+
+    body.dark {
+      --bg-color: #1b1e2b;
+      --text-color: #ffffff;
+      --panel-bg: #2a2f45;
+      --hover-bg: #3c4563;
+      --primary-color: #8faaff;
+      --modal-bg: rgba(0, 0, 0, 0.8);
+    }
+
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 0;
+      font-size: var(--font-size, 16px);
+      transition: background 0.3s, color 0.3s;
+    }
+
+    header {
+      background: #1f2a63;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem;
+    }
+
+    .logo {
+      font-style: italic;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    .nav-links a {
+      color: #fff;
+      text-decoration: none;
+      margin-left: 1.5rem;
+      font-weight: 500;
+      transition: opacity 0.2s;
+    }
+
+    .nav-links a:hover {
+      opacity: 0.8;
+    }
+
+    .security-container {
+      max-width: 720px;
+      margin: 3rem auto;
+      background: #fff;
+      padding: 2.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    body.dark .security-container {
+      background: #2a2f45;
+    }
+
+    .security-header {
+      margin-bottom: 2rem;
+      border-bottom: 1px solid #e0e4ee;
+      padding-bottom: 1.5rem;
+    }
+
+    .security-header h2 {
+      margin: 0;
+      font-size: 2rem;
+      color: var(--text-color);
+    }
+
+    .security-panel {
+      background: var(--panel-bg);
+      padding: 1.25rem 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      cursor: pointer;
+      transition: background 0.2s ease;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .security-panel:hover {
+      background: var(--hover-bg);
+    }
+
+    .security-panel h3 {
+      margin: 0;
+      font-size: 1.1rem;
+      color: var(--primary-color);
+      font-weight: 500;
+    }
+
+    .arrow {
+      font-size: 1.2rem;
+      color: var(--primary-color);
+      transition: transform 0.2s ease;
+    }
+
+    .security-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--modal-bg);
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .security-modal-content {
+      position: relative;
+      background: #fff;
+      padding: 2rem 1.5rem;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+      animation: fadeIn 0.3s ease;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    body.dark .security-modal-content {
+      background: #333a52;
+      color: #fff;
+    }
+
+    .security-modal-close {
+      position: absolute;
+      top: 0.75rem;
+      right: 1rem;
+      font-size: 1.4rem;
+      cursor: pointer;
+      color: #888;
+      font-weight: 700;
+      background: transparent;
+      border: none;
+    }
+
+    .security-modal h3 {
+      margin-top: 0;
+      font-size: 1.4rem;
+      border-bottom: 1px solid #e0e4ee;
+      padding-bottom: 0.75rem;
+    }
+
+    form label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: 500;
+      color: inherit;
+    }
+
+    form input,
+    form select,
+    form textarea {
+      width: 100%;
+      padding: 0.6rem;
+      margin-top: 0.5rem;
+      border: 1px solid #cfd4e1;
+      border-radius: 6px;
+      font-size: 0.95rem;
+    }
+
+    form textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .action-btn {
+      padding: 0.6rem 1.2rem;
+      background: var(--primary-color);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      margin-top: 1.5rem;
+    }
+
+    .action-btn:hover {
+      background: #2d3e86;
+    }
+
+    @keyframes fadeIn {
+      from {
+        transform: scale(0.95);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="nav-inner">
+      <div class="logo">RaiseTracker★</div>
+    </div>
+  </header>
+
+  <div class="security-container">
+    <div class="security-header">
+      <h2>User Settings</h2>
+    </div>
+
+    <div class="security-panel" id="security-panel">
+      <h3>Security & Account Settings</h3>
+      <span class="arrow">&#9654;</span>
+    </div>
+
+    <div class="security-panel" id="theme-panel">
+      <h3>Accessibility Settings</h3>
+      <span class="arrow">&#9654;</span>
+    </div>
+  </div>
+
+  <div class="security-modal" id="security-modal">
+    <div class="security-modal-content">
+      <button class="security-modal-close" data-close="security-modal">&times;</button>
+      <h3>Security & Account Settings</h3>
+      <form id="security-form">
+        <label>Change Password:
+          <input type="password" id="new-password" placeholder="Enter new password" />
+        </label>
+        <label>Confirm Password:
+          <input type="password" id="confirm-password" placeholder="Confirm your new password" />
+        </label>
+        <label>Enable Two-Factor Authentication:
+          <select id="enable-2fa">
+            <option>Enabled</option>
+            <option>Disabled</option>
+          </select>
+        </label>
+        <label>Change Username:
+          <input type="text" id="username" placeholder="Enter new username" />
+        </label>
+        <label>Change Email:
+          <input type="email" id="email" placeholder="Enter new email address" />
+        </label>
+        <label>Delete Account:
+          <button type="button" class="action-btn danger-btn" id="delete-account-btn">Delete Account</button>
+        </label>
+        <button type="submit" class="action-btn">Save Changes</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="security-modal" id="theme-modal">
+    <div class="security-modal-content">
+      <button class="security-modal-close" data-close="theme-modal">&times;</button>
+      <h3>Accessibility Settings</h3>
+      <form id="theme-form">
+        <label>Select Theme:
+          <select id="theme-select">
+            <option value="light">Light Mode</option>
+            <option value="dark">Dark Mode</option>
+          </select>
+        </label>
+        <label>Font Size:
+          <select id="font-size-select">
+            <option value="16px">Normal</option>
+            <option value="18px">Large</option>
+            <option value="20px">Extra Large</option>
+          </select>
+        </label>
+        <button type="submit" class="action-btn">Save Theme</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function toggleModal(id) {
+      const modal = document.getElementById(id);
+      modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    document.getElementById('security-panel').onclick = () => toggleModal('security-modal');
+    document.getElementById('theme-panel').onclick = () => toggleModal('theme-modal');
+
+    document.querySelectorAll('.security-modal-close').forEach(btn =>
+      btn.onclick = () => toggleModal(btn.getAttribute('data-close'))
+    );
+
+    document.querySelectorAll('.security-modal').forEach(overlay =>
+      overlay.onclick = e => {
+        if (e.target === overlay) overlay.style.display = 'none';
+      }
+    );
+
+    document.getElementById('security-form').onsubmit = e => {
+      e.preventDefault();
+      const newPassword = document.getElementById('new-password').value;
+      const confirmPassword = document.getElementById('confirm-password').value;
+      const enable2FA = document.getElementById('enable-2fa').value;
+      const username = document.getElementById('username').value.trim();
+      const email = document.getElementById('email').value.trim();
+
+      if (newPassword && newPassword !== confirmPassword) {
+        alert('Passwords do not match.');
+        return;
+      }
+
+      let message = 'Settings updated:';
+      if (newPassword) message += '\n• Password changed';
+      if (username) message += `\n• Username: ${username}`;
+      if (email) message += `\n• Email: ${email}`;
+      message += `\n• 2FA: ${enable2FA}`;
+
+      alert(message);
+      toggleModal('security-modal');
+    };
+
+    document.getElementById('delete-account-btn').onclick = () => {
+      if (confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+        alert("Your account has been scheduled for deletion.");
+      }
+    };
+
+    document.getElementById('theme-form').onsubmit = e => {
+      e.preventDefault();
+      const selectedTheme = document.getElementById('theme-select').value;
+      const selectedFontSize = document.getElementById('font-size-select').value;
+
+      document.body.className = selectedTheme;
+      document.body.style.setProperty('--font-size', selectedFontSize);
+
+      localStorage.setItem('theme', selectedTheme);
+      localStorage.setItem('fontSize', selectedFontSize);
+
+      alert(`Theme set to ${selectedTheme}, Font size set to ${selectedFontSize}.`);
+      toggleModal('theme-modal');
+    };
+
+    window.onload = () => {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      const savedFontSize = localStorage.getItem('fontSize') || '16px';
+      document.body.className = savedTheme;
+      document.body.style.setProperty('--font-size', savedFontSize);
+      document.getElementById('theme-select').value = savedTheme;
+      document.getElementById('font-size-select').value = savedFontSize;
+    };
+  </script>
+</body>
+</html>
+
+
+
+
