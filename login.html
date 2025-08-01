@@ -108,7 +108,7 @@
       }
     }
   </style>
-  <script>
+  <!-- <script>
       function showRegistrationForm() {
         document.getElementById('login-form').style.display = 'none';
         document.getElementById('register-user-form').style.display = 'block';
@@ -145,7 +145,7 @@
           alert('Error registering user. Please try again.');
         }
       }
-  </script>
+  </script> -->
 </head>
 
 <body>
@@ -167,11 +167,11 @@
       <table id="register-user-table">
         <tr>
           <td><label for="RegisterName">Name</label></td>
-          <td><input type="text" id="RegisterName" placeholder="Enter your email" required></td>
+          <td><input type="text" id="RegisterName" placeholder="Enter your name" required></td>
         </tr>
         <tr>
           <td><label for="RegisterEmail">Email</label></td>
-          <td><input type="email" id="RegisterEmail" placeholder="Enter your email" required></td>
+          <td><input type="email" id="RegisterEmail" placeholder="Enter your email" autocomplete="username" required></td>
         </tr>
         <tr>
           <td><label for="RegisterPassword">Password</label></td>
@@ -210,7 +210,8 @@
         console.log('Login request sent: ', JSON.stringify({username, password})));
         if (response.ok) {
         const data = await response.json();
-          if (data.success) {
+        console.log('Login response received: ', data);
+          if (data.message == "Login successful") {
             alert('Login successful!');
             window.location.href = '/index.html'; // Redirect to the main page
           } else {
@@ -220,6 +221,48 @@
           alert('Error logging in. Please try again.');
         }
     };
+  </script>
+  <script>
+      function showRegistrationForm() {
+        document.getElementById('login-form').style.display = 'none';
+        document.getElementById('register-user-form').style.display = 'block';
+        document.getElementById('welcome-text').textContent = 'Create your account';
+      }
+
+      function showLoginForm() {
+        document.getElementById('login-form').style.display = 'block';
+        document.getElementById('register-user-form').style.display = 'none';
+        document.getElementById('welcome-text').textContent = 'Welcome back! Please login to your account';
+      }
+
+      document.getElementById('register-user-form').onsubmit = async function submitUser(e) {
+        e.preventDefault();
+        const username = document.getElementById('RegisterEmail').value;
+        const password = document.getElementById('RegisterPassword').value;
+        // Employee must be created by admin before user registration is allowed
+        const employee_id = await fetch(`api/employees/GetEmployees?employee_name=${document.getElementById('RegisterName').value}`)
+          .then(response => response.json())
+          .then(data => data[0] ? data[0]._id : null);
+
+        const response = await fetch(`/api/users/RegisterUser`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username, password, employee_id })
+        });
+        if(response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            alert('Registration successful! You can now log in.');
+            showLoginForm();
+          } else {
+            alert('Registration failed: ' + data.message);
+          }
+        } else {
+          alert('Error registering user. Please try again.');
+        }
+      }
   </script>
 </body>
 </html>

@@ -49,7 +49,7 @@ router.get('/GetUsers', async (req, res) => {
   }
 });
 
-router.post('/SubmitUsers', async (req, res) => {
+router.post('/RegisterUser', async (req, res) => {
     try {
         const db = await connectToDatabase();
         const collection = db.collection('users');
