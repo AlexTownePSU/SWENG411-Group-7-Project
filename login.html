@@ -90,13 +90,20 @@
       color: #7f8ba8;
     }
 
+    #register-user-container {
+      visibility: hidden;
+      position: fixed;
+    }
+
     @media (max-width: 500px) {
       .login-container {
         padding: 2rem 1.5rem;
       }
     }
   </style>
+
 </head>
+
 <body>
   <div class="login-container">
     <div class="login-header">
@@ -105,10 +112,10 @@
     </div>
     <form id="login-form">
       <label for="email">Email Address</label>
-      <input type="email" id="email" placeholder="you@example.com" required />
+      <input type="email" id="email" placeholder="you@example.com" autocomplete="username" required />
 
       <label for="password">Password</label>
-      <input type="password" id="password" placeholder="••••••••" required />
+      <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" required />
 
       <button type="submit" class="login-btn">Login</button>
     </form>
@@ -116,14 +123,61 @@
       &copy; 2025 RaiseTracker. All rights reserved.
     </div>
   </div>
+  <div class="register-user-container">
+    <h1>Register New User</h1>
+    <form id="RegisterUser">
+      <table id="RegisterUserTable">
+        <tr>
+          <td><label for="RegisterName">Name</label></td>
+          <td><input type="text" id="RegisterName" placeholder="Enter your name" required></td>
+        </tr>
+        <tr>
+          <td><label for="RegisterEmail">Email</label></td>
+          <td><input type="email" id="RegisterEmail" placeholder="Enter your email" required></td>
+        </tr>
+        <tr>
+          <td><label for="RegisterPassword">Password</label></td>
+          <td><input type="password" id="RegisterPassword" placeholder="Enter your password" required></td>
+        </tr>
+        <tr>
+          <td><label for="RegisterConfirmPassword">Confirm Password</label></td>
+          <td><input type="password" id="RegisterConfirmPassword" placeholder="Confirm your password" required></td>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <button type="submit">Register</button>
+          </td>
+        </tr>
+      </table>
+    </form>
+  </div>
 
-  <script>
-    document.getElementById('login-form').onsubmit = function (e) {
+    <script>
+    document.getElementById('login-form').onsubmit = async function (e) {
       e.preventDefault();
-      const email = document.getElementById('email').value;
+      const username = document.getElementById('email').value;
       const password = document.getElementById('password').value;
-      alert(`Logging in as ${email}...`);
+      // alert(`Logging in as ${email}...`);
       // Add authentication logic here
+        const response = await fetch(`/api/users/LoginUser`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username, password })
+        },
+        console.log('Login request sent: ', JSON.stringify({username, password})));
+        if (response.ok) {
+        const data = await response.json();
+          if (data.success) {
+            alert('Login successful!');
+            window.location.href = '/index.html'; // Redirect to the main page
+          } else {
+            alert('Login failed: ' + data.message);
+          }
+        } else {
+          alert('Error logging in. Please try again.');
+        }
     };
   </script>
 </body>

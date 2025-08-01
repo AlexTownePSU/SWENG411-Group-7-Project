@@ -390,15 +390,42 @@
         return;
       }
       modalContent.innerHTML=`
-        <p><strong>ID:</strong> ${emp._id}</p>
-        <p><strong>Name:</strong> ${emp.employee_name}</p>
-        <p><strong>Type:</strong> ${emp.type}</p>
-        <p><strong>Job Title:</strong> ${emp.job_title}</p>
-        <p><strong>Start Date:</strong> ${emp.hire_date}</p>
-        <p><strong>Active:</strong> ${emp.active ? 'Yes' : 'No'}</p>
-        <p><strong>Trained:</strong> ${emp.trained}</p>
-        <p><strong>Qualification:</strong> ${emp.qualification}</p>`;
-        
+      <table>
+        <tr>
+          <td><strong>ID:</strong></td>
+          <td>${emp._id}</td>
+        </tr>
+        <tr>
+          <td><strong>Name:</strong></td>
+          <td>${emp.employee_name}</td>
+        </tr>
+        <tr>
+          <td><strong>Type:</strong></td>
+          <td>${emp.type}</td>
+        </tr>
+        <tr>
+          <td><strong>Job Title:</strong></td>
+          <td>${emp.job_title}</td>
+        </tr>
+        <tr>
+          <td><strong>Start Date:</strong></td>
+          <td>${emp.hire_date}</td>
+        </tr>
+        <tr>
+          <td><strong>Active:</strong></td>
+          <td>${emp.active ? 'Yes' : 'No'}</td>
+        </tr>
+        <tr>
+          <td><strong>Trained:</strong></td>
+          <td>${emp.trained}</td>
+        </tr>
+        <tr>
+          <td><strong>Qualification:</strong></td>
+          <td>${emp.qualification}</td>
+        </tr>
+      </table>
+      `;
+      
       overlay.style.display='flex';
       try {
       // Fetch performance ratings before rendering them
