@@ -90,9 +90,16 @@
       color: #7f8ba8;
     }
 
-    #register-user-container {
-      visibility: hidden;
-      position: fixed;
+    #login-form {
+      display:block;
+    }
+
+    #register-user-form{
+      display: none;
+    }
+
+    table {
+      padding-top : 0rem;
     }
 
     @media (max-width: 500px) {
@@ -101,14 +108,51 @@
       }
     }
   </style>
+  <script>
+      function showRegistrationForm() {
+        document.getElementById('login-form').style.display = 'none';
+        document.getElementById('register-user-form').style.display = 'block';
+        document.getElementById('welcome-text').textContent = 'Create your account';
+      }
 
+      function showLoginForm() {
+        document.getElementById('login-form').style.display = 'block';
+        document.getElementById('register-user-form').style.display = 'none';
+        document.getElementById('welcome-text').textContent = 'Welcome back! Please login to your account';
+      }
+
+      document.getElementById('register-user-form').onsubmit = async function submitUser(e) {
+        e.preventDefault();
+        const username = document.getElementById('RegisterEmail').value;
+        const password = document.getElementById('RegisterPassword').value;
+
+        const response = await fetch(`/api/users/RegisterUser`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username, password })
+        });
+        if(response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            alert('Registration successful! You can now log in.');
+            showLoginForm();
+          } else {
+            alert('Registration failed: ' + data.message);
+          }
+        } else {
+          alert('Error registering user. Please try again.');
+        }
+      }
+  </script>
 </head>
 
 <body>
   <div class="login-container">
     <div class="login-header">
       <div class="logo">RaiseTracker★</div>
-      <p>Welcome back! Please login to your account</p>
+      <p id="welcome-text">Welcome back! Please login to your account</p>
     </div>
     <form id="login-form">
       <label for="email">Email Address</label>
@@ -119,17 +163,11 @@
 
       <button type="submit" class="login-btn">Login</button>
     </form>
-    <div class="footer-text">
-      &copy; 2025 RaiseTracker. All rights reserved.
-    </div>
-  </div>
-  <div class="register-user-container">
-    <h1>Register New User</h1>
-    <form id="RegisterUser">
-      <table id="RegisterUserTable">
+    <form id="register-user-form">
+      <table id="register-user-table">
         <tr>
           <td><label for="RegisterName">Name</label></td>
-          <td><input type="text" id="RegisterName" placeholder="Enter your name" required></td>
+          <td><input type="text" id="RegisterName" placeholder="Enter your email" required></td>
         </tr>
         <tr>
           <td><label for="RegisterEmail">Email</label></td>
@@ -137,27 +175,30 @@
         </tr>
         <tr>
           <td><label for="RegisterPassword">Password</label></td>
-          <td><input type="password" id="RegisterPassword" placeholder="Enter your password" required></td>
+          <td><input type="password" id="RegisterPassword" placeholder="Enter your password" autocomplete="new-password" required></td>
         </tr>
         <tr>
           <td><label for="RegisterConfirmPassword">Confirm Password</label></td>
-          <td><input type="password" id="RegisterConfirmPassword" placeholder="Confirm your password" required></td>
+          <td><input type="password" id="RegisterConfirmPassword" placeholder="Confirm your password" autocomplete="new-password" required></td>
         </tr>
         <tr>
           <td colspan="2">
-            <button type="submit">Register</button>
+            <button type="submit" class="login-btn">Register</button>
           </td>
         </tr>
       </table>
     </form>
+    <div class="footer-text">
+      <p>Don't have an account? <a href="#" onclick="showRegistrationForm()" id="show-register-form">Register here</a></p>
+    <div class="footer-text">
+      &copy; 2025 RaiseTracker. All rights reserved.
+    </div>
   </div>
-
-    <script>
+  <script>
     document.getElementById('login-form').onsubmit = async function (e) {
       e.preventDefault();
       const username = document.getElementById('email').value;
       const password = document.getElementById('password').value;
-      // alert(`Logging in as ${email}...`);
       // Add authentication logic here
         const response = await fetch(`/api/users/LoginUser`, {
           method: 'POST',
