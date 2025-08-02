@@ -112,7 +112,7 @@
       </label>
       <label>Start Date: <input type="date" id="filter-start-date"></label>
       <button id="apply-filters">Apply Filters</button>
-      <!--<button id="add-employee">Add Employee</button>-->
+      <button id="clear-filters">Clear Filters</button>
     </div>
 
     <div class="employee-table">
@@ -591,26 +591,35 @@
 
     // Call this to filter employees with selected criteria on button click or when a function updates data
     function applyFilters() {
-      const typeFilter = document.getElementById('filter-type').value.toLowerCase();
-      const trainedFilter = document.getElementById('filter-trained').value.toLowerCase();
-      const hire_dateFilter = document.getElementById('filter-start-date').value;
+  const typeFilter = document.getElementById('filter-type').value.toLowerCase();
+  const trainedFilter = document.getElementById('filter-trained').value.toLowerCase();
+  const hireDateFilter = document.getElementById('filter-start-date').value;
 
-      currentFilteredEmployees = employees.filter(emp => {
-        // Filter by type
-        if (typeFilter !== 'all' && emp.type.toLowerCase() !== typeFilter) return false;
+  currentFilteredEmployees = employees.filter(emp => {
+    // Filter by employment type
+    if (typeFilter !== 'all' && emp.type.toLowerCase() !== typeFilter) return false;
 
-        // Filter by trained
-        if (trainedFilter !== 'all' && emp.trained.toLowerCase() !== trainedFilter) return false;
+    // Filter by training status
+    if (trainedFilter !== 'all' && emp.trained.toLowerCase() !== trainedFilter) return false;
 
-        // Filter by start date (on or after)
-        if (hire_dateFilter) {
-          if (emp.hire_date < hire_dateFilter) return false;
-        }
-        return true;
-      });
+    // Filter by start date (on or after selected date)
+    if (hireDateFilter && emp.hire_date < hireDateFilter) return false;
 
-      renderEmployees(currentFilteredEmployees);
-    }
+    return true;
+  });
+
+  renderEmployees(currentFilteredEmployees);
+}
+
+  // Handle Apply Filters button click
+  document.getElementById('apply-filters').addEventListener('click', applyFilters);
+
+  // Handle Clear Filters button click
+  document.getElementById('clear-filters').addEventListener('click', () => {
+  // Reset all filter inputs to default
+    document.getElementById('filter-type').value = 'all';
+    document.getElementById('filter-trained').value = 'all';
+    document.getElementById('filter-start-date').value = '';
 
     // Apply filters on button click
     document.getElementById('apply-filters').addEventListener('click', applyFilters);
@@ -736,4 +745,5 @@
   </script>
 </body>
 </html>
+
 
