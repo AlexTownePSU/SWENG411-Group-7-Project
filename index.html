@@ -283,6 +283,10 @@
             <td><input type="date" id="add-hire_date" required></td>
           </tr>
           <tr>
+            <td><label for="add-active">Active:</label></td>
+            <td><input type="checkbox" id="add-active" checked></td>
+          </tr>
+          <tr>
             <td><label for="add-trained">Trained:</label></td>
             <td>
               <select id="add-trained">
@@ -616,19 +620,20 @@
 
   // Handle Clear Filters button click
   document.getElementById('clear-filters').addEventListener('click', () => {
-  // Reset all filter inputs to default
+    // Reset all filter inputs to default
     document.getElementById('filter-type').value = 'all';
     document.getElementById('filter-trained').value = 'all';
     document.getElementById('filter-start-date').value = '';
+  });
 
     // Apply filters on button click
     document.getElementById('apply-filters').addEventListener('click', applyFilters);
 
+    // Open add employee modal when button is clicked
     document.getElementById('add-employee').addEventListener('click', () => {
       document.getElementById('add-form').reset();
       document.getElementById('add-modal-overlay').style.display = 'flex';
     });
-  });
 
     const addOverlay = document.getElementById('add-modal-overlay');
     const addForm = document.getElementById('add-form');
@@ -656,7 +661,7 @@
     // Add employee to the database
     async function postNewEmployee(newEmp) {
       try {
-        const response = await fetch('/api/SubmitEmployees', {
+        const response = await fetch('/api/employees/SubmitEmployees', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -685,7 +690,7 @@
     });
 
     function exportToCSV(data) {
-      const headers = ['ID','Name','Type','Start Date','Trained','Qualification'];
+      const headers = ['Name','Type','Job Title','Start Date','Active','Trained','Qualification'];
       const csvRows = [];
       csvRows.push(headers.join(','));
       data.forEach(emp => {
