@@ -16,6 +16,8 @@ const app = express();
 // Serve static files (like index.html)
 app.use(express.static(path.join(__dirname)));
 
+
+
 // Set CORS options
 const corsOptions = {
 	origin: `http://${hostname}:${port}`,
@@ -41,6 +43,13 @@ app.use('/api/employees', employeesRoute);		// Include employee API routes
 app.use('/api/performance', performanceRoute);	// Include performance API routes
 app.use('/api/users', usersRoute);				// Include user API routes
 app.use('/api/training', trainingRoute);		// Include training API routes
+
+
+// Default route
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'login.html'));
+});
+
 
 // Connect to DB then Start server
 connectToDatabase().then(() => {
