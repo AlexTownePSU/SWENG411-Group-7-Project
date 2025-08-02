@@ -14,7 +14,6 @@
       justify-content: center;
       align-items: center;
     }
-
     .login-container {
       background: #fff;
       padding: 2.5rem 2rem;
@@ -23,42 +22,36 @@
       max-width: 400px;
       width: 100%;
     }
-
     .login-header {
       text-align: center;
       margin-bottom: 2rem;
     }
-
     .login-header h1 {
       margin: 0;
       color: #1f2a63;
       font-size: 1.8rem;
       font-weight: bold;
     }
-
     .login-header p {
       color: #6f7a94;
       margin-top: 0.5rem;
       font-size: 0.95rem;
     }
-
     form label {
       display: block;
-      margin-top: 1.2rem;
+      margin-top: 1rem;
       color: #3f4a6b;
       font-weight: 500;
     }
-
     form input {
-      width: 100%;
+      width: 95%;
       padding: 0.6rem;
-      margin-top: 0.5rem;
+      margin-top: 0.6rem;
       border: 1px solid #cfd4e1;
       border-radius: 6px;
       font-size: 0.95rem;
       color: #3f4a6b;
     }
-
     .login-btn {
       width: 100%;
       margin-top: 2rem;
@@ -71,83 +64,29 @@
       cursor: pointer;
       transition: background 0.2s ease;
     }
-
     .login-btn:hover {
       background: #2d3e86;
     }
-
     .logo {
       font-style: italic;
       font-size: 1.5rem;
       font-weight: bold;
       color: #3a4e9e;
     }
-
     .footer-text {
       text-align: center;
       margin-top: 1.5rem;
       font-size: 0.85rem;
       color: #7f8ba8;
     }
-
-    #login-form {
-      display:block;
-    }
-
-    #register-user-form{
-      display: none;
-    }
-
-    table {
-      padding-top : 0rem;
-    }
+    #login-form { display: block; }
+    #register-user-form { display: none; }
 
     @media (max-width: 500px) {
-      .login-container {
-        padding: 2rem 1.5rem;
-      }
+      .login-container { padding: 2rem 1.5rem; }
     }
   </style>
-  <!-- <script>
-      function showRegistrationForm() {
-        document.getElementById('login-form').style.display = 'none';
-        document.getElementById('register-user-form').style.display = 'block';
-        document.getElementById('welcome-text').textContent = 'Create your account';
-      }
-
-      function showLoginForm() {
-        document.getElementById('login-form').style.display = 'block';
-        document.getElementById('register-user-form').style.display = 'none';
-        document.getElementById('welcome-text').textContent = 'Welcome back! Please login to your account';
-      }
-
-      document.getElementById('register-user-form').onsubmit = async function submitUser(e) {
-        e.preventDefault();
-        const username = document.getElementById('RegisterEmail').value;
-        const password = document.getElementById('RegisterPassword').value;
-
-        const response = await fetch(`/api/users/RegisterUser`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ username, password })
-        });
-        if(response.ok) {
-          const data = await response.json();
-          if (data.success) {
-            alert('Registration successful! You can now log in.');
-            showLoginForm();
-          } else {
-            alert('Registration failed: ' + data.message);
-          }
-        } else {
-          alert('Error registering user. Please try again.');
-        }
-      }
-  </script> -->
 </head>
-
 <body>
   <div class="login-container">
     <div class="login-header">
@@ -162,107 +101,99 @@
       <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" required />
 
       <button type="submit" class="login-btn">Login</button>
+
+      <div class="footer-text" id="login-footer">
+        <p>Don't have an account? <a href="#" onclick="showRegistrationForm()">Register here</a></p>
+      </div>
     </form>
+    
     <form id="register-user-form">
-      <table id="register-user-table">
-        <tr>
-          <td><label for="RegisterName">Name</label></td>
-          <td><input type="text" id="RegisterName" placeholder="Enter your name" required></td>
-        </tr>
-        <tr>
-          <td><label for="RegisterEmail">Email</label></td>
-          <td><input type="email" id="RegisterEmail" placeholder="Enter your email" autocomplete="username" required></td>
-        </tr>
-        <tr>
-          <td><label for="RegisterPassword">Password</label></td>
-          <td><input type="password" id="RegisterPassword" placeholder="Enter your password" autocomplete="new-password" required></td>
-        </tr>
-        <tr>
-          <td><label for="RegisterConfirmPassword">Confirm Password</label></td>
-          <td><input type="password" id="RegisterConfirmPassword" placeholder="Confirm your password" autocomplete="new-password" required></td>
-        </tr>
-        <tr>
-          <td colspan="2">
-            <button type="submit" class="login-btn">Register</button>
-          </td>
-        </tr>
-      </table>
+      <label for="RegisterName">Name</label>
+      <input type="text" id="RegisterName" placeholder="Enter your name" required />
+
+      <label for="RegisterEmail">Email Address</label>
+      <input type="email" id="RegisterEmail" placeholder="Enter your email" autocomplete="username" required />
+      <label for="RegisterPassword">Password</label>
+      <input type="password" id="RegisterPassword" placeholder="Enter your password" autocomplete="new-password" required />
+
+      <label for="RegisterConfirmPassword">Confirm Password</label>
+      <input type="password" id="RegisterConfirmPassword" placeholder="Confirm your password" autocomplete="new-password" required />
+
+      <button type="submit" class="login-btn">Register</button>
+
+      <div class="footer-text">
+        <p>Already have an account? <a href="#" onclick="showLoginForm()">Sign in</a></p>
+      </div>
     </form>
-    <div class="footer-text">
-      <p>Don't have an account? <a href="#" onclick="showRegistrationForm()" id="show-register-form">Register here</a></p>
     <div class="footer-text">
       &copy; 2025 RaiseTracker. All rights reserved.
     </div>
   </div>
+  
   <script>
     document.getElementById('login-form').onsubmit = async function (e) {
       e.preventDefault();
       const username = document.getElementById('email').value;
       const password = document.getElementById('password').value;
-      // Add authentication logic here
-        const response = await fetch(`/api/users/LoginUser`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ username, password })
-        },
-        console.log('Login request sent: ', JSON.stringify({username, password})));
-        if (response.ok) {
+      const response = await fetch(`/api/users/LoginUser`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      if (response.ok) {
         const data = await response.json();
-        console.log('Login response received: ', data);
-          if (data.message == "Login successful") {
-            alert('Login successful!');
-            window.location.href = '/index.html'; // Redirect to the main page
-          } else {
-            alert('Login failed: ' + data.message);
-          }
+        if (data.message === "Login successful") {
+          alert('Login successful! Redirecting...');
+          window.location.href = '/index.html';
         } else {
-          alert('Error logging in. Please try again.');
+          alert('Login failed: ' + data.message);
         }
+      } else {
+        alert('Error logging in. Please try again.');
+      }
     };
-  </script>
-  <script>
-      function showRegistrationForm() {
-        document.getElementById('login-form').style.display = 'none';
-        document.getElementById('register-user-form').style.display = 'block';
-        document.getElementById('welcome-text').textContent = 'Create your account';
+    function showRegistrationForm() {
+      document.getElementById('login-form').style.display = 'none';
+      document.getElementById('register-user-form').style.display = 'block';
+      document.getElementById('welcome-text').textContent = 'New here? Please create an account to get started.';
+    }
+    function showLoginForm() {
+      document.getElementById('login-form').style.display = 'block';
+      document.getElementById('register-user-form').style.display = 'none';
+      document.getElementById('welcome-text').textContent = 'Welcome back! Please login to your account';
+    }
+    document.getElementById('register-user-form').onsubmit = async function (e) {
+      e.preventDefault();
+      const name = document.getElementById('RegisterName').value;
+      const username = document.getElementById('RegisterEmail').value;
+      const password = document.getElementById('RegisterPassword').value;
+      const confirmPassword = document.getElementById('RegisterConfirmPassword').value;
+
+      if (password !== confirmPassword) {
+        alert('Passwords do not match. Please try again.');
+        return;
       }
-
-      function showLoginForm() {
-        document.getElementById('login-form').style.display = 'block';
-        document.getElementById('register-user-form').style.display = 'none';
-        document.getElementById('welcome-text').textContent = 'Welcome back! Please login to your account';
-      }
-
-      document.getElementById('register-user-form').onsubmit = async function submitUser(e) {
-        e.preventDefault();
-        const username = document.getElementById('RegisterEmail').value;
-        const password = document.getElementById('RegisterPassword').value;
-        // Employee must be created by admin before user registration is allowed
-        const employee_id = await fetch(`api/employees/GetEmployees?employee_name=${document.getElementById('RegisterName').value}`)
-          .then(response => response.json())
-          .then(data => data[0] ? data[0]._id : null);
-
-        const response = await fetch(`/api/users/RegisterUser`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ username, password, employee_id })
-        });
-        if(response.ok) {
-          const data = await response.json();
-          if (data.success) {
-            alert('Registration successful! You can now log in.');
-            showLoginForm();
-          } else {
-            alert('Registration failed: ' + data.message);
-          }
+      const employeeRes = await fetch(`api/employees/GetEmployees?employee_name=${encodeURIComponent(name)}`);
+      const employeeData = await employeeRes.json();
+      const employee_id = employeeData[0]?._id || null;
+      const response = await fetch(`/api/users/RegisterUser`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, employee_id })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          alert('Registration successful! You can now log in.');
+          showLoginForm();
         } else {
-          alert('Error registering user. Please try again.');
+          alert('Registration failed: ' + data.message);
         }
+      } else {
+        alert('Error registering user. Please try again later.');
       }
+    };
   </script>
 </body>
 </html>
+
