@@ -696,9 +696,9 @@
       csvRows.push(headers.join(','));
       data.forEach(emp => {
         const row = [
-          `"${emp._id}"`,
           `"${emp.employee_name}"`,
           `"${emp.type}"`,
+          `"${emp.job_title}"`,
           `"${emp.hire_date}"`,
           `"${emp.active}"`,
           `"${emp.trained}"`,
@@ -726,12 +726,13 @@
     document.getElementById('exportPdf').addEventListener('click', e => {
       e.preventDefault();
       const doc = new jsPDF();
-      const headers = [['ID', 'Name', 'Type', 'Start Date', 'Trained', 'Qualification']];
+      const headers = [['Name','Type','Job Title','Start Date','Active','Trained','Qualification']];
       const rows = currentFilteredEmployees.map(emp => [
-        emp._id,
-        emp.name,
+        emp.employee_name,
         emp.type,
+        emp.job_title,
         emp.hire_date,
+        emp.active ? 'Active' : 'Inactive',
         emp.trained,
         emp.qualification
       ]);
