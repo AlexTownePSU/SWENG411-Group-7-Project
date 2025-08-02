@@ -528,7 +528,7 @@
       emp.qualification = document.getElementById('edit-qualification').value;
       
       (async () => {
-        await postUpdatedEmployee(emp);
+        await putUpdatedEmployee(emp);
         console.log('Post update employee values:', emp);
         // Update the filtered list and re-render after employee edit finishes
         updateFilteredEmployeesAfterEdit(emp);
@@ -537,7 +537,7 @@
       })();
     });
 
-    async function postUpdatedEmployee(emp) {
+    async function putUpdatedEmployee(emp) {
       try {
         const response = await fetch(`/api/employees/UpdateEmployees/${emp._id}`, {
           method: 'PUT',

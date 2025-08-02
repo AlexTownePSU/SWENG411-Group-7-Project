@@ -36,9 +36,10 @@ const client = new MongoClient(uri, {
 	}
 });
 
-// API endpoints
 app.use(express.json());	// Allows for parsing JSON bodies
 app.use(express.urlencoded({ extended: true }));
+
+// API endpoints
 app.use('/api/employees', employeesRoute);		// Include employee API routes
 app.use('/api/performance', performanceRoute);	// Include performance API routes
 app.use('/api/users', usersRoute);				// Include user API routes
