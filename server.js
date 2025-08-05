@@ -9,7 +9,7 @@ const trainingRoute = require('./routes/training'); // Import training routes
 const connectToDatabase = require('./db/db.js');
 
 
-const hostname = '192.168.86.122';
+const hostname = '192.168.86.27';
 const port = 3000;
 const app = express();
 
