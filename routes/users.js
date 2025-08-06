@@ -73,7 +73,11 @@ router.post('/RegisterUser', async (req, res) => {
         const newUser = {
             username: username.trim(),
             password: hashedPassword,
-            employee_id: new ObjectId(employee_id)
+            employee_id: new ObjectId(employee_id),
+            settings: {
+              font_size: "Normal",  // Default font size for new users
+              theme: "Light"        // Default color theme for new users
+            }
         };
 
         // Insert new user
