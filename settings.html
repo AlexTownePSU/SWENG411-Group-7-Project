@@ -517,33 +517,35 @@ function toggleModal(id) {
         alert("Your account has been scheduled for deletion.");
       }
     };
+  document.getElementById('theme-form').onsubmit = (e) => {
+    e.preventDefault();
 
-    document.getElementById('theme-form').onsubmit = e => {
-      e.preventDefault();
-      const selectedTheme = document.getElementById('theme-select').value;
-      const selectedFontSize = document.getElementById('font-size-select').value;
+    const selectedTheme = document.getElementById('theme-select').value;
+    const selectedFontSize = document.getElementById('font-size-select').value;
 
-      document.body.className = selectedTheme;
-      document.body.style.setProperty('--font-size', selectedFontSize);
+    document.body.className = selectedTheme;
+    document.body.style.setProperty('--font-size', selectedFontSize);
 
-      localStorage.setItem('theme', selectedTheme);
-      localStorage.setItem('fontSize', selectedFontSize);
+    localStorage.setItem('theme', selectedTheme);
+    localStorage.setItem('fontSize', selectedFontSize);
 
-      alert(`Theme set to ${selectedTheme}, Font size set to ${selectedFontSize}.`);
-      toggleModal('theme-modal');
-    };
+    alert(`Theme set to ${selectedTheme}, Font size set to ${selectedFontSize}.`);
+    toggleModal('theme-modal');
+  };
+  window.onload = () => {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    const savedFontSize = localStorage.getItem('fontSize') || '16px';
 
-    window.onload = () => {
-      const savedTheme = localStorage.getItem('theme') || 'light';
-      const savedFontSize = localStorage.getItem('fontSize') || '16px';
-      document.body.className = savedTheme;
-      document.body.style.setProperty('--font-size', savedFontSize);
-      document.getElementById('theme-select').value = savedTheme;
-      document.getElementById('font-size-select').value = savedFontSize;
-    };
+    document.body.className = savedTheme;
+    document.body.style.setProperty('--font-size', savedFontSize);
+
+    document.getElementById('theme-select').value = savedTheme;
+    document.getElementById('font-size-select').value = savedFontSize;
+  };
   </script>
 </body>
 </html>
+
 
 
 
