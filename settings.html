@@ -364,8 +364,8 @@
           <img src="blank-profile-picture-973460_960_720-300x300.png" alt="avatar">
         </button>
         <div id="userDropdown" class="dropdown">
-          <a href="#">Dashboard</a>
-          <a href="#">Logout</a>
+          <a href="index.html">Dashboard</a>
+          <a href="login.html">Logout</a>
         </div>
       </div>
     </div>
@@ -373,8 +373,9 @@
 
   <div class="profile-container">
     <div class="avatar-wrapper">
-      <img src="hr-avatar.png" class="avatar">
-      <div class="upload-btn" onclick="alert('Upload flow here')">Change Photo</div>
+    <img id="profile-avatar" src="hr-avatar.png" class="avatar" />
+	  <input type="file" id="avatar-upload" accept="image/*" style="display: none;" />
+	  <div class="upload-btn" onclick="document.getElementById('avatar-upload').click()">Change Photo
     </div>
     <div id="welcome-message" style="font-size: 1.3rem; font-weight: 600; margin-bottom:       1.5rem; color: var(--text-color);">
     Welcome, <span id="username-display">User</span>!
@@ -533,6 +534,7 @@ function toggleModal(id) {
     localStorage.setItem('fontSize') || selectedFontSize;
     toggleModal('theme-modal');
   };
+  // Initialize Page Load
   window.onload = () => {
     const savedTheme = localStorage.getItem('theme') || 'light';
     const savedFontSize = localStorage.getItem('fontSize') || '16px';
@@ -543,9 +545,41 @@ function toggleModal(id) {
     document.getElementById('theme-select').value = savedTheme;
     document.getElementById('font-size-select').value = savedFontSize;
   };
+  window.onload = () => {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    const savedFontSize = localStorage.getItem('fontSize') || '16px';
+    const savedAvatar = localStorage.getItem('userAvatar');
+
+    document.body.className = savedTheme;
+    document.body.style.setProperty('--font-size', savedFontSize);
+    document.getElementById('theme-select').value = savedTheme;
+    document.getElementById('font-size-select').value = savedFontSize;
+
+    if (savedAvatar) {
+      document.getElementById('profile-avatar').src = savedAvatar;
+      document.getElementById('top-avatar').src = savedAvatar;
+    }
+  };
+  // Avatar upload logic
+  document.getElementById('avatar-upload').addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const imageData = e.target.result;
+      localStorage.setItem('userAvatar', imageData);
+
+      // Update both avatars
+      document.getElementById('profile-avatar').src = imageData;
+      document.getElementById('top-avatar').src = imageData;
+    };
+    reader.readAsDataURL(file);
+  });
   </script>
 </body>
 </html>
+
 
 
 
