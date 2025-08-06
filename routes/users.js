@@ -43,6 +43,10 @@ router.get('/GetUsers', async (req, res) => {
         return res.status(400).json({message: 'Invalid ObjectId format for employee_id'});
       }
     }
+
+    const users = await collection.find(query).toArray();
+    console.log("User(s) found:", users);
+    res.json(users);  // Return JSON string of users found in query
 } catch (error) {
     console.error('Error fetching users:', error);
     res.status(500).json({ message: 'Internal server error' });
@@ -76,7 +80,7 @@ router.post('/RegisterUser', async (req, res) => {
             employee_id: new ObjectId(employee_id),
             settings: {
               font_size: "Normal",  // Default font size for new users
-              theme: "Light"        // Default color theme for new users
+              theme: "light"        // Default color theme for new users
             }
         };
 

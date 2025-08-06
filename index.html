@@ -446,7 +446,13 @@ body.dark .modal-close {
       </form>
     </div>
   </div>
-
+  <script>
+    async function getEmployeeLoggedIn(userId) {
+      const res = await fetch(`api/users/GetUsers?_id=${userId}`);
+      const user = await res.json();
+      return user;
+    }
+  </script>
   <script>
     const { jsPDF } = window.jspdf;
 
@@ -891,9 +897,21 @@ body.dark .modal-close {
     script.onload = () => renderEmployees(employees);
     document.head.appendChild(script);
 
-      window.onload = () => {
-  const savedTheme = localStorage.getItem('theme') || 'light';
-  const savedFontSize = localStorage.getItem('fontSize') || '16px';
+window.onload = async () => {
+  const user_id = localStorage.getItem('user_id');
+  console.log("User ID found:", user_id);
+  // Not functioning yet
+  // Will load the user ID when user logs in into local storage, then we pass the ID to the database to get the employee ID
+  // We can use the employee ID to look up settings and choose dark mode or font size
+  if (user_id) {
+    const user = await getEmployeeLoggedIn(user_id); // ✅ await here
+    console.log("User found:", user);
+  } else {
+    console.warn("No user ID found in localStorage.");
+  }
+
+  const savedTheme = localStorage.getItem('theme');
+  const savedFontSize = localStorage.getItem('fontSize');
 
   document.body.className = savedTheme;
   document.body.style.setProperty('--font-size', savedFontSize);

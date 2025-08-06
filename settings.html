@@ -529,6 +529,8 @@ function toggleModal(id) {
     localStorage.setItem('fontSize', selectedFontSize);
 
     alert(`Theme set to ${selectedTheme}, Font size set to ${selectedFontSize}.`);
+    localStorage.setItem('theme') || selectedTheme;
+    localStorage.setItem('fontSize') || selectedFontSize;
     toggleModal('theme-modal');
   };
   window.onload = () => {
