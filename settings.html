@@ -576,9 +576,24 @@ function toggleModal(id) {
     };
     reader.readAsDataURL(file);
   });
+	const hrUserData = {
+    username: localStorage.getItem("currentUserName") || "User",
+    employeesManaged: localStorage.getItem("employeesManaged") || 0,
+    lastLogin: new Date().toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric"
+    })
+  };
+  window.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("username-display").textContent = hrUserData.username;
+    document.getElementById("employees-managed").textContent = hrUserData.employeesManaged;
+    document.getElementById("last-login").textContent = hrUserData.lastLogin;
+  });  
   </script>
 </body>
 </html>
+
 
 
 
