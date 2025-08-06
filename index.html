@@ -4,78 +4,218 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RaiseTracker Dashboard</title>
-  <style>
-    body{
-      font-family:Arial, sans-serif;
-      background:linear-gradient(135deg,#f0f4ff 0%,#ffffff 100%);
-      margin:0;padding:0;
-    }
-    header{
-      background:#2d2d73;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.2);
-    }
-    .nav-inner{
-      max-width:1200px;margin:0 auto;
-      display:flex;justify-content:space-between;align-items:center;
-      padding:1rem;
-    }
-    .logo{font-style:italic;font-size:1.5rem;font-weight:bold;}
-    .relative{position:relative;}
-    .avatar-btn img{height:32px;width:32px;border-radius:9999px;}
-    .dropdown{
-      position:absolute;right:0;top:100%;margin-top:.5rem;
-      background:#fff;border:1px solid #e5e5e5;border-radius:6px;
-      box-shadow:0 4px 12px rgba(0,0,0,.15);width:160px;
-      display:none;z-index:100;
-    }
-    .dropdown a{
-      display:block;padding:.6rem 1rem;color:#333;text-decoration:none;
-      font-size:.9rem;
-    }
-    .dropdown a:hover{background:#f3f3f7;}
-    .container{max-width:1200px;margin:0 auto;padding:2rem;}
-    .filters,.employee-table{
-      margin-bottom:2rem;background:#fff;padding:1.5rem;border-radius:8px;
-      box-shadow:0 4px 12px rgba(0,0,0,.1);
-    }
-    label{margin-right:1rem;font-weight:500;}
-    input,select{
-      margin-right:.75rem;padding:.5rem;border:1px solid #ccc;border-radius:4px;
-    }
-    table{width:100%;border-collapse:collapse;}
-    th,td{padding:.75rem;border-bottom:1px solid #dee2e6;text-align:left;}
-    th{background:#e9ecef;font-weight:600;}
-    button,.action-btn{
-      padding:.5rem 1rem;background:#007bff;color:#fff;border:none;border-radius:4px;
-      cursor:pointer;margin-right:.5rem;transition:.2s ease;
-    }
-    button:hover,.action-btn:hover{background:#0056b3;transform:translateY(-1px);}
-    .action-btn{padding:.3rem .6rem;font-size:.9rem;}
-    .modal-overlay{
-      display:none;
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,.5);
-      align-items:center;
-      justify-content:center;
-      z-index:1000;
-    }
-    .modal{
-      position:relative;
-      background:#fff;
-      padding:2rem;
-      border-radius:8px;
-      width:90%;
-      max-width:500px;
-      box-shadow:0 4px 12px rgba(0,0,0,.3);
-      animation:fadeIn .25s ease;
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-    .modal-close{
-      position:absolute;top:.4rem;right:.8rem;font-size:1.5rem;
-      cursor:pointer;color:#666;font-weight:700;
-    }
-    @keyframes fadeIn{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1;}}
+   <style>
+  :root {
+  --font-size: 16px; /* Default */
+}
+  :root {
+  --bg-color: #f4f6fa;
+  --text-color: #1f2a63;
+}
+body {
+  font-family: Arial, sans-serif;
+  font-size: var(--font-size);  /* Use CSS variable for font size */
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-color, #f4f6fa);
+  color: var(--text-color, #1f2a63);
+}
+body.light {
+  background: linear-gradient(135deg, #f0f4ff 0%, #ffffff 100%);
+}
+body.dark {
+  --bg-color: #1b1e2b;
+  --text-color: #ffffff;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+header {
+  background: #2d2d73;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .2);
+}
+body.dark header {
+  background: #22264a;
+}
+.nav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+}
+.logo {
+  font-style: italic;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+.relative {
+  position: relative;
+}
+.avatar-btn img {
+  height: 32px;
+  width: 32px;
+  border-radius: 9999px;
+}
+.dropdown {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: .5rem;
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
+  width: 160px;
+  display: none;
+  z-index: 100;
+}
+.dropdown a {
+  display: block;
+  padding: .6rem 1rem;
+  color: #333;
+  text-decoration: none;
+  font-size: .9rem;
+}
+.dropdown a:hover {
+  background: #f3f3f7;
+}
+body.dark .dropdown {
+  background: #2a2f45;
+  border-color: #444;
+}
+body.dark .dropdown a {
+  color: #ccc;
+}
+body.dark .dropdown a:hover {
+  background: #3c4563;
+}
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+.filters,
+.employee-table {
+  margin-bottom: 2rem;
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .1);
+}
+body.dark .filters,
+body.dark .employee-table {
+  background: #2a2f45;
+}
+label {
+  margin-right: 1rem;
+  font-weight: 500;
+}
+input,
+select {
+  margin-right: .75rem;
+  padding: .5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  color: #000;
+}
+body.dark input,
+body.dark select {
+  background: #444c66;
+  color: #fff;
+  border-color: #666;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th,
+td {
+  padding: .75rem;
+  border-bottom: 1px solid #dee2e6;
+  text-align: left;
+}
+th {
+  background: #e9ecef;
+  font-weight: 600;
+}
+body.dark th {
+  background: #3c4563;
+  color: #fff;
+}
+button,
+.action-btn {
+  padding: .5rem 1rem;
+  background: #003c99; /* much darker blue */
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: .5rem;
+  transition: .2s ease;
+}
+button:hover,
+.action-btn:hover {
+  background: #002d73; /* deeper blue on hover */
+  transform: translateY(-1px);
+}
+body.dark button,
+body.dark .action-btn {
+  background: #395ec9;
+}
+body.dark button:hover,
+body.dark .action-btn:hover {
+  background: #2d4aa4;
+}
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .5);
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal {
+  position: relative;
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .3);
+  animation: fadeIn .25s ease;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+body.dark .modal {
+  background: #333a52;
+  color: #fff;
+}
+.modal-close {
+  position: absolute;
+  top: .4rem;
+  right: .8rem;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+  font-weight: 700;
+}
+body.dark .modal-close {
+  color: #ccc;
+}
+@keyframes fadeIn {
+  from {
+    transform: scale(.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
   </style>
   <!-- jsPDF CDN for PDF export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -750,9 +890,18 @@
     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js';
     script.onload = () => renderEmployees(employees);
     document.head.appendChild(script);
+
+      window.onload = () => {
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  const savedFontSize = localStorage.getItem('fontSize') || '16px';
+
+  document.body.className = savedTheme;
+  document.body.style.setProperty('--font-size', savedFontSize);
+};
   </script>
 </body>
 </html>
+
 
 
 
