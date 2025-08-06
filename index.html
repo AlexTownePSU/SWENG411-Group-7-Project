@@ -226,7 +226,8 @@ body.dark .modal-close {
       <div class="logo">RaiseTracker★</div>
       <div class="relative">
         <button id="userMenuBtn" class="avatar-btn" style="background:none;border:none;cursor:pointer;">
-          <img src="blank-profile-picture-973460_960_720-300x300.png" alt="avatar">
+          <img id="top-avatar" src="blank-profile-picture-973460_960_720-300x300.png" alt="avatar">
+        </button>>
         </button>
         <div id="userDropdown" class="dropdown">
          <a href="settings.html">Settings</a>
@@ -915,10 +916,18 @@ window.onload = async () => {
 
   document.body.className = savedTheme;
   document.body.style.setProperty('--font-size', savedFontSize);
+   const savedAvatar = localStorage.getItem('userAvatar');
+  if (savedAvatar) {
+    const avatarImg = document.getElementById('top-avatar');
+    if (avatarImg) {
+      avatarImg.src = savedAvatar;
+    }
+  }  
 };
   </script>
 </body>
 </html>
+
 
 
 
