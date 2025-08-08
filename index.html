@@ -450,6 +450,9 @@ body.dark .modal-close {
   <script>
     async function getEmployeeLoggedIn(userId) {
       const res = await fetch(`api/users/GetUsers?_id=${userId}`);
+      if(!res.ok){
+        console.log("Error searching user:", res.message);
+      }
       const user = await res.json();
       return user;
     }
