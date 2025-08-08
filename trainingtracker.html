@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Training Tracker</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f9fbfd;
+      margin: 0;
+      padding: 0;
+      color: #1f2a63;
+    }
+    header {
+      background: #2d2d73;
+      color: #fff;
+      padding: 1rem 2rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    }
+    h2 {
+      font-size: 1.75rem;
+      margin-bottom: 0.75rem;
+      color: #1f2a63;
+    }
+    p.welcome {
+      font-size: 1rem;
+      margin-bottom: 2rem;
+      color: #3b3f5c;
+    }
+    .actions {
+      text-align: right;
+      margin-bottom: 1.5rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+    th, td {
+      padding: 0.85rem;
+      border-bottom: 1px solid #e1e7f0;
+      text-align: left;
+    }
+    th {
+      background: #eef1f9;
+      font-weight: 600;
+      color: #2d2d73;
+    }
+    button {
+      padding: 0.5rem 1rem;
+      background: #0056b3;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    button:hover {
+      background: #003d80;
+    }
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 10px;
+      width: 95%;
+      max-width: 500px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    }
+    .modal-close {
+      float: right;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #555;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #333;
+    }
+    input, select {
+      width: 100%;
+      padding: 0.6rem;
+      margin-bottom: 1.2rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 0.95rem;
+    }
+    .header-btn {
+      background: #ffffff;
+      color: #2d2d73;
+      border: 2px solid #ffffff;
+      padding: 0.4rem 1rem;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+    .header-btn:hover {
+      background: #e0e3f0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 style="font-size: 1.5rem; font-style: italic; font-weight: bold;">TrainingTracker★</h1>
+    <a href="index.html"><button class="header-btn">Back to Dashboard</button></a>
+  </header>
+
+  <div class="container">
+    <p class="welcome">Welcome to the Training Tracker page! Here you can keep track of your employees' training progress, including certifications, classes, and orientations.</p>
+    <h2>Employee Training Status</h2>
+    <div class="actions">
+      <button onclick="openModal()">Add Training</button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Start Date</th>
+          <th>End Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="training-body"></tbody>
+    </table>
+  </div>
+
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <span class="modal-close" onclick="closeModal()">&times;</span>
+      <h3 style="margin-bottom: 1rem;">Add Training</h3>
+      <form id="training-form">
+        <label for="name">Name:</label>
+        <input type="text" id="name" required />
+
+        <label for="type">Type:</label>
+        <select id="type">
+          <option value="Class">Class</option>
+          <option value="Certification">Certification</option>
+          <option value="Orientation">Orientation</option>
+        </select>
+
+        <label for="start">Start Date:</label>
+        <input type="date" id="start" required />
+
+        <label for="end">End Date:</label>
+        <input type="date" id="end" required />
+
+        <label for="status">Status:</label>
+        <select id="status">
+          <option value="Pending">Pending</option>
+          <option value="In-Progress">In-Progress</option>
+          <option value="Completed">Completed</option>
+          <option value="Cancelled">Cancelled</option>
+        </select>
+
+        <button type="submit">Save</button>
+      </form>
+      <hr style="margin: 1.5rem 0;">
+      <h4>Send Reminder Email</h4>
+      <label for="reminder-frequency">Frequency:</label>
+      <select id="reminder-frequency">
+        <option value="weekly">Weekly</option>
+        <option value="bi-weekly">Bi-Weekly</option>
+        <option value="monthly">Monthly</option>
+        <option value="annually">Annually</option>
+      </select>
+      <button onclick="sendReminders()">Send Reminder</button>
+    </div>
+  </div>
+
+  <script>
+    const modal = document.getElementById('modal');
+    const form = document.getElementById('training-form');
+    const tbody = document.getElementById('training-body');
+    let trainings = [];
+
+    function openModal() {
+      modal.style.display = 'flex';
+      form.reset();
+    }
+
+    function closeModal() {
+      modal.style.display = 'none';
+    }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const training = {
+        name: document.getElementById('name').value,
+        type: document.getElementById('type').value,
+        start: document.getElementById('start').value,
+        end: document.getElementById('end').value,
+        status: document.getElementById('status').value
+      };
+      trainings.push(training);
+      renderTrainings();
+      closeModal();
+    });
+
+    function renderTrainings() {
+      tbody.innerHTML = '';
+      trainings.forEach((t, index) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${t.name}</td>
+          <td>${t.type}</td>
+          <td>${t.start}</td>
+          <td>${t.end}</td>
+          <td>${t.status}</td>
+          <td><button onclick="deleteTraining(${index})">Delete</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function deleteTraining(index) {
+      if (confirm('Delete this training record?')) {
+        trainings.splice(index, 1);
+        renderTrainings();
+      }
+    }
+
+    function sendReminders() {
+      const frequency = document.getElementById('reminder-frequency').value;
+      const incomplete = trainings.filter(t => t.status !== 'Completed');
+      if (incomplete.length === 0) {
+        alert('No incomplete trainings to send reminders for.');
+        return;
+      }
+      alert(`Sending ${frequency} reminder emails for ${incomplete.length} training(s) that are 50% or less completed.`);
+    }
+  </script>
+</body>
+</html>
