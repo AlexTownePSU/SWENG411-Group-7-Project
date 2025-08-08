@@ -382,7 +382,6 @@
     Welcome, <span id="username-display">User</span>!
       </div>
     <p class="profile-bio">Manage your display and security settings to optimize your RaiseTracker experience here.</p>
-
 <hr/>
 
 <div id="live-user-stats">
@@ -577,6 +576,45 @@ function toggleModal(id) {
     };
     reader.readAsDataURL(file);
   });
+
+  async function isLoggedIn() {
+    const user_id = localStorage.getItem('user_id');                                          // Start by getting user_id from the localStorage. Early out if this is null/undefined
+    if(!user_id) {
+      return false;
+    } else {
+      return true;  // If user has a user_id in localStorage we know they've logged in previously. Should probably verify that it's a legit ID
+    }
+  }
+
+  // Function to fetch user API and Employee API which will get the value of employee_name tied to the user, then update the innerHTML of the element
+  async function getName() {
+    if(!isLoggedIn()){
+      console.log('User_id not found! Redirecting user to log in screen.');
+      window.location.href = '/login.html';                                                   // Redirect user to login screen if they make it to settings without a user_id
+    }
+    // Fetch user information to get employee ID
+    const user_req = await fetch(`api/users/GetUsers?_id=${user_id}`);
+    const user_res = await user_req.json(); // Wait for the user to be returned from the API
+    if(!user_req.ok){
+      console.log('Failed to find user in user database: ', user_req.message);
+    } else {
+      console.log('Found user! Querying employee database for name.')
+      const employee_id = user_res[0].employee_id || null;                                    // After we get the employee_id we assign it to this variable
+      const emp_req = await fetch(`api/employees/GetEmployees?_id=${employee_id}`);           // Use the returned employee_id to get the employee data
+      const emp_res = await emp_req.json();                                                   // Wait for the employee to be returned from the API
+      if(!emp_req.ok){
+        console.log('Failed to find employee: ', emp_req.message);
+      } else {
+        console.log('Found employee! Displaying name');
+        const employee_name = emp_res[0].employee_name || null;
+        document.getElementById('username-display').innerHTML = employee_name;                // Update the HTML of the user's name display on the page
+      }
+    }
+  } 
+
+  // Call get name to update user name displayed
+  getName();
+
 	const hrUserData = {
     username: localStorage.getItem("currentUserName") || "User",
     employeesManaged: localStorage.getItem("employeesManaged") || 0,
