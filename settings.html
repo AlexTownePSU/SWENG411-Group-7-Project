@@ -526,18 +526,19 @@ function toggleModal(id) {
     document.body.className = selectedTheme;
     document.body.style.setProperty('--font-size', selectedFontSize);
 
-    localStorage.setItem('theme', selectedTheme);
-    localStorage.setItem('fontSize', selectedFontSize);
+    updateUserSettings();
+    //localStorage.setItem('theme', selectedTheme);
+    //localStorage.setItem('fontSize', selectedFontSize);
 
     alert(`Theme set to ${selectedTheme}, Font size set to ${selectedFontSize}.`);
-    localStorage.setItem('theme') || selectedTheme;
-    localStorage.setItem('fontSize') || selectedFontSize;
+    // localStorage.setItem('theme') || selectedTheme;
+    // localStorage.setItem('fontSize') || selectedFontSize;
     toggleModal('theme-modal');
   };
   // Initialize Page Load
   window.onload = () => {
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    const savedFontSize = localStorage.getItem('fontSize') || '16px';
+    const savedTheme = getUserSettings().theme;
+    const savedFontSize = getUserSettings().font_size;
 
     document.body.className = savedTheme;
     document.body.style.setProperty('--font-size', savedFontSize);
@@ -546,10 +547,11 @@ function toggleModal(id) {
     document.getElementById('font-size-select').value = savedFontSize;
   };
   window.onload = () => {
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    const savedFontSize = localStorage.getItem('fontSize') || '16px';
+    // const savedTheme = localStorage.getItem('theme') || 'light';
+    const savedTheme = getUserSettings().theme;
+    const savedFontSize = getUserSettings().font_size;
     const savedAvatar = localStorage.getItem('userAvatar');
-
+    console.log(`Loaded user settings: font_size=${savedFontSize}, theme=${savedTheme}`);
     document.body.className = savedTheme;
     document.body.style.setProperty('--font-size', savedFontSize);
     document.getElementById('theme-select').value = savedTheme;
@@ -577,6 +579,17 @@ function toggleModal(id) {
     reader.readAsDataURL(file);
   });
 
+  async function getUserSettings() {
+    const user_id = localStorage.getItem('user_id');                                          // Start by getting user_id from the localStorage. Early out if this is null/undefined
+    const req = await fetch(`api/users/GetUsers?_id=${user_id}`);
+    const res = await req.json();
+    if(!req.ok){
+      console.error('Error getting settings:', req.message);
+    }
+    console.log(`Settings loaded: ${res[0].settings.theme}, ${res[0].settings.font_size}`);
+    return res[0].settings;
+  }
+
   async function isLoggedIn() {
     const user_id = localStorage.getItem('user_id');                                          // Start by getting user_id from the localStorage. Early out if this is null/undefined
     if(!user_id) {
@@ -592,6 +605,7 @@ function toggleModal(id) {
       console.log('User_id not found! Redirecting user to log in screen.');
       window.location.href = '/login.html';                                                   // Redirect user to login screen if they make it to settings without a user_id
     }
+    const user_id = localStorage.getItem('user_id');                                          // Start by getting user_id from the localStorage. Early out if this is null/undefined
     // Fetch user information to get employee ID
     const user_req = await fetch(`api/users/GetUsers?_id=${user_id}`);
     const user_res = await user_req.json(); // Wait for the user to be returned from the API
@@ -614,6 +628,52 @@ function toggleModal(id) {
 
   // Call get name to update user name displayed
   getName();
+
+  async function updateUserSettings() {
+    const user_id = localStorage.getItem('user_id');
+    const req = await fetch(`api/users/GetUsers?_id=${user_id}`);
+    const res = await req.json();
+    if(!req.ok) {
+      conole.error('Error finding user: ', req.message);
+    }
+    // We pull the values from the database here because this function should only be called when you click the button to save accessibility settings
+    const username = res[0].username;
+    const password = res[0].password;
+    const employee_id = res[0].employee_id;
+    font_size_px = 0;
+    
+    fontSize = document.getElementById('font-size-select').value
+    switch (fontSize){
+      case "Normal":
+        font_size_px = 16;
+        break;
+      case "Large":
+        font_size_px = 18;
+        break;
+      case "Extra Large":
+        font_size_px = 20;
+        break;
+      default:
+        font_size_px = 16;
+        break;
+    }
+    console.log('font_size_px is now:', font_size_px)
+
+    // Get settings from the form since we're updating those
+    const settings = {
+      theme: document.getElementById('theme-select').value,
+      font_size: font_size_px
+    }
+    console.log(`Theme is now: ${settings.theme}`);
+    const user_res = await fetch(`api/users/UpdateUser/${user_id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password, employee_id, settings })
+    });
+    if(!user_res.ok){
+      console.error(`Error updating user settings: ${user_res.message}`);
+    }    
+  }
 
 	const hrUserData = {
     username: localStorage.getItem("currentUserName") || "User",
