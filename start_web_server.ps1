@@ -1,1 +1,1 @@
-node server.js
+NGROK_AUTHTOKEN=30zNfHfjAvIY1KqIDvnHJcoYZE4_4rBn3WLdkMRVkHqZy4Dja node server.js

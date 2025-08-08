@@ -79,7 +79,7 @@ router.post('/RegisterUser', async (req, res) => {
             password: hashedPassword,
             employee_id: new ObjectId(employee_id),
             settings: {
-              font_size: "Normal",  // Default font size for new users
+              font_size: 16,        // Default font size for new users
               theme: "light"        // Default color theme for new users
             }
         };
@@ -122,6 +122,35 @@ router.post('/LoginUser', async (req, res) => {
         console.error('Error during login:', error);
         res.status(500).json({ message: 'Internal server error', error });
     }
+});
+
+router.put('/UpdateUser/:id', async (req, res) => {
+  try {
+    const db = await connectToDatabase();
+    const collection = db.collection('users');
+
+    const userId = req.params.id;
+    const { username, password, employee_id, settings } = req.body;
+
+    const updatedUser = {
+      username,
+      password,
+      employee_id: new ObjectId(employee_id),
+      settings: {
+        theme: settings.theme,
+        font_size: settings.font_size
+      }
+    };
+    const result = await collection.updateOne(
+      { _id: new ObjectId(userId) },
+      { $set: updatedUser }
+    );
+
+    res.status(200).json({ modifiedCount: result.modifiedCount });
+  } catch (error) {
+    console.error('Update error:', error.stack);
+    res.status(500).json({ error: 'Failed to update user', details: error.message });
+  }
 });
 
 router.delete('/DeleteUsers/:id', async (req, res) => {
