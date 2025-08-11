@@ -583,7 +583,7 @@ function toggleModal(id) {
   });
 
   async function getUserSettings() {
-    const user_id = localStorage.getItem('user_id');                                          // Start by getting user_id from the localStorage. Early out if this is null/undefined
+    const user_id = sessionStorage.getItem('user_id');                                          // Start by getting user_id from the sessionStorage. Early out if this is null/undefined
     const req = await fetch(`api/users/GetUsers?_id=${user_id}`);
     const res = await req.json();
     if(!req.ok){
@@ -594,11 +594,11 @@ function toggleModal(id) {
   }
 
   async function isLoggedIn() {
-    const user_id = localStorage.getItem('user_id');                                          // Start by getting user_id from the localStorage. Early out if this is null/undefined
+    const user_id = sessionStorage.getItem('user_id');                                          // Start by getting user_id from the sessionStorage. Early out if this is null/undefined
     if(!user_id) {
       return false;
     } else {
-      return true;  // If user has a user_id in localStorage we know they've logged in previously. Should probably verify that it's a legit ID
+      return true;  // If user has a user_id in sessionStorage we know they've logged in previously. Should probably verify that it's a legit ID
     }
   }
 
@@ -608,7 +608,7 @@ function toggleModal(id) {
       console.log('User_id not found! Redirecting user to log in screen.');
       window.location.href = '/login.html';                                                   // Redirect user to login screen if they make it to settings without a user_id
     }
-    const user_id = localStorage.getItem('user_id');                                          // Start by getting user_id from the localStorage. Early out if this is null/undefined
+    const user_id = sessionStorage.getItem('user_id');                                          // Start by getting user_id from the sessionStorage. Early out if this is null/undefined
     // Fetch user information to get employee ID
     const user_req = await fetch(`api/users/GetUsers?_id=${user_id}`);
     const user_res = await user_req.json(); // Wait for the user to be returned from the API
@@ -633,7 +633,7 @@ function toggleModal(id) {
   getName();
 
   async function updateUserSettings() {
-    const user_id = localStorage.getItem('user_id');
+    const user_id = sessionStorage.getItem('user_id');
     const req = await fetch(`api/users/GetUsers?_id=${user_id}`);
     const res = await req.json();
     if(!req.ok) {
@@ -665,7 +665,7 @@ function toggleModal(id) {
   }
 
 	const hrUserData = {
-    username: localStorage.getItem("currentUserName") || "User",
+    username: sessionStorage.getItem("currentUserName") || "User",
     employeesManaged: localStorage.getItem("employeesManaged") || 0,
     lastLogin: new Date().toLocaleDateString("en-US", {
       year: "numeric",

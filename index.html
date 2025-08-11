@@ -227,7 +227,7 @@ body.dark .modal-close {
       <div class="relative">
         <button id="userMenuBtn" class="avatar-btn" style="background:none;border:none;cursor:pointer;">
           <img id="top-avatar" src="blank-profile-picture-973460_960_720-300x300.png" alt="avatar">
-        </button>>
+        </button>
         </button>
         <div id="userDropdown" class="dropdown">
          <a href="settings.html">Settings</a>
@@ -901,7 +901,7 @@ body.dark .modal-close {
 
 window.onload = async () => {
   user = ""
-  const user_id = localStorage.getItem('user_id');
+  const user_id = sessionStorage.getItem('user_id');
   console.log("User ID found:", user_id);
   // Will load the user ID when user logs in into local storage, then we pass the ID to the database to get the employee ID
   // We can use the employee ID to look up settings and choose dark mode or font size
@@ -909,7 +909,7 @@ window.onload = async () => {
     user = await getEmployeeLoggedIn(user_id); // await here
     console.log("User found:", user);
   } else {
-    console.warn("No user ID found in localStorage.");
+    console.warn("No valid user ID found.");
     window.location.href = '/login.html'; // Send users with no ID to the log in screen
   }
 
