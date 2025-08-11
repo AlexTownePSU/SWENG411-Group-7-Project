@@ -7,30 +7,29 @@ const performanceRoute = require('./routes/performance');
 const usersRoute = require('./routes/users'); // Import user routes
 const trainingRoute = require('./routes/training'); // Import training routes
 const connectToDatabase = require('./db/db.js');
-// const http = require('http');
-// const ngrok = require('@ngrok/ngrok');
+const http = require('http');
+const ngrok = require('@ngrok/ngrok');
+require ('dotenv').config();
 
-const hostname = '192.168.86.27';
+const hostname = '0.0.0.0';
 const port = 3000;
 const app = express();
 
 //ngrok http --url=one-tahr-huge.ngrok-free.app 80
-//  async function startNgrokTunnel() {
-// 	try {
-// 		const listener = await ngrok.forward({
-// 			url: 'http://localhost',
-// 			addr: 80, // Replace with the port your Node.js app is running on
-// 			authtoken: '30zNfHfjAvIY1KqIDvnHJcoYZE4_4rBn3WLdkMRVkHqZy4Dja', // Or directly pass your authtoken here
-// 			forwards_to: 'one-tahr-huge.ngrok-free.app'
-// 		});
-// 		console.log(`ngrok tunnel established at: ${listener.url()}`);
-// 	} catch (error) {
-// 		console.error('Error starting ngrok tunnel:', error);
-// 	}
-// }
+ (async function() {
+	try {
+		const listener = await ngrok.forward({
+			addr: 3000, // Replace with the port your Node.js app is running on
+			authtoken: process.env.NGROK_AUTHTOKEN,
+			domain: "one-tahr-huge.ngrok-free.app"
+		});
+		console.log(`ngrok tunnel established at: ${listener.url()}`);
+	} catch (error) {
+		console.error('Error starting ngrok tunnel:', error);
+	}
+})();
 
-// Call the function to start the tunnel when your app initializes
-// startNgrokTunnel();
+
 
 // Serve static files (like index.html)
 app.use(express.static(path.join(__dirname)));
@@ -41,6 +40,7 @@ const corsOptions = {
 	methods: ['GET', 'POST', 'PUT', 'DELETE'],
 	credentials: true,
 };
+
 app.use(cors(corsOptions));
 
 // MongoDB connection
