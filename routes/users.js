@@ -79,7 +79,7 @@ router.post('/RegisterUser', async (req, res) => {
             password: hashedPassword,
             employee_id: new ObjectId(employee_id),
             settings: {
-              font_size: 16,        // Default font size for new users
+              font_size: "16px",    // Default font size for new users
               theme: "light"        // Default color theme for new users
             }
         };

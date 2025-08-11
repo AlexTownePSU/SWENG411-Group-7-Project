@@ -916,7 +916,7 @@ window.onload = async () => {
   const savedTheme = user[0].settings.theme;
   console.log(`Theme settings found: ${savedTheme}`);
   const savedFontSize = user[0].settings.font_size;
-
+  console.log(`Font settings found: ${savedFontSize}`);
   document.body.className = savedTheme;
   document.body.style.setProperty('--font-size', savedFontSize);
    const savedAvatar = localStorage.getItem('userAvatar');

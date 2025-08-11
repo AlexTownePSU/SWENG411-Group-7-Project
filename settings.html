@@ -526,40 +526,43 @@ function toggleModal(id) {
     document.body.className = selectedTheme;
     document.body.style.setProperty('--font-size', selectedFontSize);
 
-    updateUserSettings();
-    //localStorage.setItem('theme', selectedTheme);
-    //localStorage.setItem('fontSize', selectedFontSize);
+    updateUserSettings(); // Run update users settings to save current values in settings form
 
     alert(`Theme set to ${selectedTheme}, Font size set to ${selectedFontSize}.`);
-    // localStorage.setItem('theme') || selectedTheme;
-    // localStorage.setItem('fontSize') || selectedFontSize;
     toggleModal('theme-modal');
   };
   // Initialize Page Load
-  window.onload = () => {
-    const savedTheme = getUserSettings().theme;
-    const savedFontSize = getUserSettings().font_size;
+  // window.onload = () => {
+  //   // We're never getting here or running this code. Need to ask Meha what it's supposed to do.
+  //   console.log("this is the first window.onload");
+  //   const savedTheme = getUserSettings().theme;
+  //   const savedFontSize = getUserSettings().font_size;
 
-    document.body.className = savedTheme;
-    document.body.style.setProperty('--font-size', savedFontSize);
+  //   document.body.className = savedTheme;
+  //   document.body.style.setProperty('--font-size', savedFontSize);
 
-    document.getElementById('theme-select').value = savedTheme;
-    document.getElementById('font-size-select').value = savedFontSize;
-  };
-  window.onload = () => {
-    // const savedTheme = localStorage.getItem('theme') || 'light';
-    const savedTheme = getUserSettings().theme;
-    const savedFontSize = getUserSettings().font_size;
-    const savedAvatar = localStorage.getItem('userAvatar');
-    console.log(`Loaded user settings: font_size=${savedFontSize}, theme=${savedTheme}`);
-    document.body.className = savedTheme;
-    document.body.style.setProperty('--font-size', savedFontSize);
-    document.getElementById('theme-select').value = savedTheme;
-    document.getElementById('font-size-select').value = savedFontSize;
+  //   document.getElementById('theme-select').value = savedTheme;
+  //   document.getElementById('font-size-select').value = savedFontSize;
+  // };
+  window.onload = async () => {
+    console.log("this is the second window.onload");
+    try {
+      const settings = await getUserSettings(); // Wait for the async return of settings and provide default values while waiting
+      const savedTheme = settings.theme || 'light';
+      const savedFontSize = settings.font_size || "16px";
+      const savedAvatar = localStorage.getItem('userAvatar');
+      console.log(`Loaded user settings: font_size=${savedFontSize}, theme=${savedTheme}`);
+      document.body.className = savedTheme;
+      document.body.style.setProperty('--font-size', savedFontSize);
+      document.getElementById('theme-select').value = savedTheme;
+      document.getElementById('font-size-select').value = savedFontSize;
 
-    if (savedAvatar) {
-      document.getElementById('profile-avatar').src = savedAvatar;
-      document.getElementById('top-avatar').src = savedAvatar;
+      if (savedAvatar) {
+        document.getElementById('profile-avatar').src = savedAvatar;
+        document.getElementById('top-avatar').src = savedAvatar;
+      }
+    } catch (error) {
+      console.error("Failed to load user settings:", error);
     }
   };
   // Avatar upload logic
@@ -643,26 +646,12 @@ function toggleModal(id) {
     font_size_px = 0;
     
     fontSize = document.getElementById('font-size-select').value
-    switch (fontSize){
-      case "Normal":
-        font_size_px = 16;
-        break;
-      case "Large":
-        font_size_px = 18;
-        break;
-      case "Extra Large":
-        font_size_px = 20;
-        break;
-      default:
-        font_size_px = 16;
-        break;
-    }
-    console.log('font_size_px is now:', font_size_px)
+    console.log('font_size_px is now:', fontSize)
 
     // Get settings from the form since we're updating those
     const settings = {
       theme: document.getElementById('theme-select').value,
-      font_size: font_size_px
+      font_size: fontSize
     }
     console.log(`Theme is now: ${settings.theme}`);
     const user_res = await fetch(`api/users/UpdateUser/${user_id}`, {
