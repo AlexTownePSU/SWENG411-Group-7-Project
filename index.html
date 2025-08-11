@@ -903,7 +903,6 @@ window.onload = async () => {
   user = ""
   const user_id = localStorage.getItem('user_id');
   console.log("User ID found:", user_id);
-  // Not functioning yet
   // Will load the user ID when user logs in into local storage, then we pass the ID to the database to get the employee ID
   // We can use the employee ID to look up settings and choose dark mode or font size
   if (user_id) {
@@ -911,6 +910,7 @@ window.onload = async () => {
     console.log("User found:", user);
   } else {
     console.warn("No user ID found in localStorage.");
+    window.location.href = '/login.html'; // Send users with no ID to the log in screen
   }
 
   const savedTheme = user[0].settings.theme;
