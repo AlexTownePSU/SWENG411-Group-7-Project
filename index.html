@@ -928,9 +928,16 @@ window.onload = async () => {
     }
   }  
 };
+     window.addEventListener('storage', (e) => {
+    if (e.key === 'userAvatar' && e.newValue) {
+      const img = document.getElementById('top-avatar');
+      if (img) img.src = e.newValue;
+    }
+  });
   </script>
 </body>
 </html>
+
 
 
 
