@@ -42,8 +42,9 @@ export async function RegisterUser(name, username, password, confirmPassword) {
     }
     const user_check = await fetch(`/api/users/GetUsers?username=${username}&employee_id=${employee_id}`);
     const data = await user_check.json();
+    console.log(data); // See if this is ever null
     // If user is already in database or the employee is linked to a different account don't add them to the database
-    if (data !== null){
+    if (data.length !== 0){
       alert('User already exists in database or employee linked to another account.');
       return;
     }
