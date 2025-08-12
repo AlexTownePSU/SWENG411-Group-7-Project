@@ -139,6 +139,8 @@
           <th>Type</th>
           <th>Start Date</th>
           <th>End Date</th>
+          <th>Duration</th>
+          <th>Required</th>
           <th>Status</th>
           <th>Actions</th>
         </tr>
@@ -196,7 +198,7 @@
     const modal = document.getElementById('modal');
     const form = document.getElementById('training-form');
     const tbody = document.getElementById('training-body');
-    let trainings = [];
+    var trainings = [];
 
     function openModal() {
       modal.style.display = 'flex';
@@ -221,17 +223,38 @@
       closeModal();
     });
 
-    function renderTrainings() {
+    async function loadTrainings(list) {
+      try{
+        const response = await fetch(`/api/training/GetTrainingStatus`);
+        const data = await response.json();
+        console.log('Data returned from API', data);
+        if(!response.ok){
+            console.error('Error loading training sessions,', response.message);
+        } else if(data.length !== 0){
+            list.length = 0;     // Clear out previous list
+            list.push(...data);  // Push data into new list
+        } else {
+          console.warn('Fetched list came back empty');
+        }
+      } catch(err) {
+        console.error('Error fetching data: ', err);    
+      }
+    }
+
+    async function renderTrainings() {
       tbody.innerHTML = '';
-      trainings.forEach((t, index) => {
+      trainings.forEach(t => {
+        t.start_date = new Date(t.start_date).toISOString().slice(0,10);
+        t.end_date = new Date(t.end_date).toISOString().slice(0,10);
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${t.name}</td>
           <td>${t.type}</td>
-          <td>${t.start}</td>
-          <td>${t.end}</td>
+          <td>${t.start_date}</td>
+          <td>${t.end_date}</td>
+          <td>${t.duration} ${t.duration_type}</td>
+          <td>${t.required}</td>
           <td>${t.status}</td>
-          <td><button onclick="deleteTraining(${index})">Delete</button></td>
         `;
         tbody.appendChild(tr);
       });
@@ -253,6 +276,12 @@
       }
       alert(`Sending ${frequency} reminder emails for ${incomplete.length} training(s) that are 50% or less completed.`);
     }
+
+    window.onload = async () => {
+      await loadTrainings(trainings);  // Populate trainings list      
+      console.log('Trainings returned: ', trainings);
+      await renderTrainings();                  // Render list into table
+    };
   </script>
 </body>
 </html>

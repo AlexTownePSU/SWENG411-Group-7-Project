@@ -7,7 +7,7 @@ const connectToDatabase = require('../db/db.js');
 router.get('/GetTrainingStatus', async (req, res) => {
     try {
         const db = await connectToDatabase();
-        const collection = db.collection('training');
+        const collection = db.collection('training_status');
     
         // Build dynamic query object
         const query = {};
@@ -31,8 +31,7 @@ router.get('/GetTrainingStatus', async (req, res) => {
     
         // Fetch training status
         const trainingStatus = await collection.find(query).toArray();
-        
-        res.status(200).json(trainingStatus);
+        res.json(trainingStatus).status(200);
     } catch (error) {
         console.error('Error fetching training status:', error);
         res.status(500).json({ message: 'Internal server error' });
@@ -43,7 +42,7 @@ router.get('/GetTrainingStatus', async (req, res) => {
 router.put('/UpdateTrainingStatus/:id', async (req, res) => {
     try {
         const db = await connectToDatabase();
-        const collection = db.collection('training');
+        const collection = db.collection('training_status');
         
         const { id } = req.params;
         const updateData = req.body;
@@ -74,7 +73,7 @@ router.put('/UpdateTrainingStatus/:id', async (req, res) => {
 router.post('/AddTrainingStatus', async (req, res) => {
     try {
         const db = await connectToDatabase();
-        const collection = db.collection('training');
+        const collection = db.collection('training_status');
 
         const newTrainingStatus = req.body;
 
@@ -96,7 +95,7 @@ router.post('/AddTrainingStatus', async (req, res) => {
 router.delete('/DeleteTrainingStatus/:id', async (req, res) => {
     try {
         const db = await connectToDatabase();
-        const collection = db.collection('training');
+        const collection = db.collection('training_status');
 
         const { id } = req.params;
 
