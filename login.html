@@ -100,8 +100,8 @@
       <label for="password">Password</label>
       <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" required />
 
-      <button type="submit" class="login-btn">Login</button>
-
+      <button type="submit" class="login-btn" id="login-submit-btn">Login</button>
+      <script type="module" src="../public/js/userFunctions.js"></script>
       <div class="footer-text" id="login-footer">
         <p>Don't have an account? <a href="#" onclick="showRegistrationForm()">Register here</a></p>
       </div>
@@ -119,7 +119,7 @@
       <label for="RegisterConfirmPassword">Confirm Password</label>
       <input type="password" id="RegisterConfirmPassword" placeholder="Confirm your password" autocomplete="new-password" required />
 
-      <button type="submit" class="login-btn">Register</button>
+      <button type="submit" class="login-btn" id="login-register-btn">Register</button>
 
       <div class="footer-text">
         <p>Already have an account? <a href="#" onclick="showLoginForm()">Sign in</a></p>
@@ -131,28 +131,28 @@
   </div>
   
   <script>
-    document.getElementById('login-form').onsubmit = async function (e) {
-      e.preventDefault();
-      const username = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      const response = await fetch(`/api/users/LoginUser`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
-      if (response.ok) {
-        const data = await response.json();
-        if (data.message === "Login successful") {
-          alert('Login successful! Redirecting...');
-          sessionStorage.setItem('user_id', data.userId);
-          window.location.href = '/index.html';
-        } else {
-          alert('Login failed: ' + data.message);
-        }
-      } else {
-        alert('Error logging in. Please try again.');
-      }
-    };
+    // document.getElementById('login-form').onsubmit = async function (e) {
+    //   e.preventDefault();
+    //   const username = document.getElementById('email').value;
+    //   const password = document.getElementById('password').value;
+    //   const response = await fetch(`/api/users/LoginUser`, {
+    //     method: 'POST',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify({ username, password })
+    //   });
+    //   if (response.ok) {
+    //     const data = await response.json();
+    //     if (data.message === "Login successful") {
+    //       alert('Login successful! Redirecting...');
+    //       sessionStorage.setItem('user_id', data.userId);
+    //       window.location.href = '/index.html';
+    //     } else {
+    //       alert('Login failed: ' + data.message);
+    //     }
+    //   } else {
+    //     alert('Error logging in. Please try again.');
+    //   }
+    // };
     function showRegistrationForm() {
       document.getElementById('login-form').style.display = 'none';
       document.getElementById('register-user-form').style.display = 'block';

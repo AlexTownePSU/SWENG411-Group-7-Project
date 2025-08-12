@@ -15,7 +15,6 @@ const hostname = '0.0.0.0';
 const port = 3000;
 const app = express();
 
-//ngrok http --url=one-tahr-huge.ngrok-free.app 80
  (async function() {
 	try {
 		const listener = await ngrok.forward({
@@ -31,7 +30,7 @@ const app = express();
 
 
 
-// Serve static files (like index.html)
+// Serve static files (like index.html) adding some extra protection by only showing public html files
 app.use(express.static(path.join(__dirname)));
 
 // Set CORS options
@@ -61,12 +60,6 @@ app.use('/api/employees', employeesRoute);		// Include employee API routes
 app.use('/api/performance', performanceRoute);	// Include performance API routes
 app.use('/api/users', usersRoute);				// Include user API routes
 app.use('/api/training', trainingRoute);		// Include training API routes
-
-// Default route
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'login.html'));
-});
-
 
 // Connect to DB then Start server
 connectToDatabase().then(() => {

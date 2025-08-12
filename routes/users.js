@@ -45,7 +45,6 @@ router.get('/GetUsers', async (req, res) => {
     }
 
     const users = await collection.find(query).toArray();
-    console.log("User(s) found:", users);
     res.json(users);  // Return JSON string of users found in query
 } catch (error) {
     console.error('Error fetching users:', error);
