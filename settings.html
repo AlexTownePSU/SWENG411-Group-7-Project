@@ -93,7 +93,7 @@
     button, .action-btn {
       margin-top: 1rem;
       padding: .5rem 1rem;
-      background: #007bff;
+      background: #003c99;
       color: #fff;
       border: none;
       border-radius: 4px;
@@ -104,7 +104,13 @@
     button:hover, .action-btn:hover {
       transform: translateY(-1px);
     }
-    .action-btn {
+   body.dark button, body.dark .action-btn {
+      background: #395ec9;
+    }
+body.dark button:hover, body.dark .action-btn:hover {
+      background: #2d4aa4;
+    }  
+	  .action-btn {
       padding: .3rem .6rem;
       font-size: .9rem;
     }
@@ -682,6 +688,7 @@ function toggleModal(id) {
   </script>
 </body>
 </html>
+
 
 
 
