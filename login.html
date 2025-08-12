@@ -131,28 +131,6 @@
   </div>
   
   <script>
-    // document.getElementById('login-form').onsubmit = async function (e) {
-    //   e.preventDefault();
-    //   const username = document.getElementById('email').value;
-    //   const password = document.getElementById('password').value;
-    //   const response = await fetch(`/api/users/LoginUser`, {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify({ username, password })
-    //   });
-    //   if (response.ok) {
-    //     const data = await response.json();
-    //     if (data.message === "Login successful") {
-    //       alert('Login successful! Redirecting...');
-    //       sessionStorage.setItem('user_id', data.userId);
-    //       window.location.href = '/index.html';
-    //     } else {
-    //       alert('Login failed: ' + data.message);
-    //     }
-    //   } else {
-    //     alert('Error logging in. Please try again.');
-    //   }
-    // };
     function showRegistrationForm() {
       document.getElementById('login-form').style.display = 'none';
       document.getElementById('register-user-form').style.display = 'block';
@@ -163,37 +141,6 @@
       document.getElementById('register-user-form').style.display = 'none';
       document.getElementById('welcome-text').textContent = 'Welcome back! Please login to your account';
     }
-    document.getElementById('register-user-form').onsubmit = async function (e) {
-      e.preventDefault();
-      const name = document.getElementById('RegisterName').value;
-      const username = document.getElementById('RegisterEmail').value;
-      const password = document.getElementById('RegisterPassword').value;
-      const confirmPassword = document.getElementById('RegisterConfirmPassword').value;
-
-      if (password !== confirmPassword) {
-        alert('Passwords do not match. Please try again.');
-        return;
-      }
-      const employeeRes = await fetch(`api/employees/GetEmployees?employee_name=${encodeURIComponent(name)}`);
-      const employeeData = await employeeRes.json();
-      const employee_id = employeeData[0]?._id || null;
-      const response = await fetch(`/api/users/RegisterUser`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password, employee_id })
-      });
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          alert('Registration successful! You can now log in.');
-          showLoginForm();
-        } else {
-          alert('Registration failed: ' + data.message);
-        }
-      } else {
-        alert('Error registering user. Please try again later.');
-      }
-    };
   </script>
 </body>
 </html>
