@@ -994,8 +994,140 @@ window.onload = async () => {
 </body>
 </html>
 
+<script>
+function updateEmployeesManagedCount(n){
+  try { localStorage.setItem('employeesManaged', String(n || 0)); }
+  catch(e){ console.warn('Could not persist employeesManaged:', e); }
+}
 
+/* Wrap renderEmployees to update the count whenever the table is rendered */
+(function(){
+  const tryWrap = () => {
+    const fn = window.renderEmployees;
+    if(typeof fn === 'function' && !fn.__wrappedForCount){
+      window.renderEmployees = function(list){
+        try { updateEmployeesManagedCount(Array.isArray(list) ? list.length : 0); } catch(e){}
+        return fn.apply(this, arguments);
+      };
+      window.renderEmployees.__wrappedForCount = true;
+    }
+  };
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', tryWrap);
+  } else {
+    tryWrap();
+  }
+})();
 
+/* ---------- Change Log utilities ---------- */
+function deepClone(obj){ try { return JSON.parse(JSON.stringify(obj)); } catch { return obj; } }
+
+function recordChange(action, before, after){
+  const entry = {
+    id: `chg_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
+    timestamp: new Date().toISOString(),
+    action, // 'add' | 'edit' | 'delete' | 'revert' (reverts added by Settings)
+    employeeId: (after && after._id) || (before && before._id) || null,
+    before: before ? deepClone(before) : null,
+    after:  after  ? deepClone(after)  : null,
+    reverted: false
+  };
+  const log = JSON.parse(localStorage.getItem('employeeChangeLog') || '[]');
+  log.unshift(entry);
+  try { localStorage.setItem('employeeChangeLog', JSON.stringify(log)); }
+  catch(e){ console.warn('Failed to persist change log', e); }
+}
+
+/* ---------- Fetch interceptor to auto-record add/edit/delete ---------- */
+(function(){
+  const EMP_BASE = '/api/employees';
+  const _fetch = window.fetch.bind(window);
+
+  async function getAllEmployees(){
+    try {
+      const res = await _fetch(`${EMP_BASE}/GetEmployees`);
+      if(!res.ok) return [];
+      return await res.json();
+    } catch(e){ return []; }
+  }
+
+  function parseBody(init){
+    if(!init || !init.body) return null;
+    try {
+      if(typeof init.body === 'string') return JSON.parse(init.body);
+      // Some setups pass a Request object instead; not handled here.
+      return null;
+    } catch { return null; }
+  }
+
+  window.fetch = async function(input, init){
+    const url = (typeof input === 'string') ? input : (input && input.url) || '';
+    const method = (init && (init.method || init.type)) ? String(init.method || init.type).toUpperCase() : 'GET';
+
+    // Intercept GET employees to keep Settings count fresh
+    const isGetAll = url.includes(`${EMP_BASE}/GetEmployees`) && method === 'GET';
+
+    // ADD
+    const isAdd = url.includes(`${EMP_BASE}/SubmitEmployees`) && method === 'POST';
+    // EDIT
+    const matchUpdate = url.match(new RegExp(`${EMP_BASE}/UpdateEmployees/([^/]+)`));
+    const isEdit = !!matchUpdate && method === 'PUT';
+    const editId = isEdit ? decodeURIComponent(matchUpdate[1]) : null;
+    // DELETE
+    const matchDel = url.match(new RegExp(`${EMP_BASE}/DeleteEmployees/([^/]+)`));
+    const isDel = !!matchDel && method === 'DELETE';
+    const delId = isDel ? decodeURIComponent(matchDel[1]) : null;
+
+    let beforeSnapshot = null;
+    if(isEdit || isDel){
+      const list = await getAllEmployees(); // snapshot BEFORE server mutation
+      const targetId = isEdit ? editId : delId;
+      beforeSnapshot = list.find(e => String(e._id) === String(targetId)) || null;
+    }
+
+    // Perform the actual fetch
+    const response = await _fetch(input, init);
+
+    // Clone response for our own reads without consuming caller's stream
+    const clone = response.clone();
+
+    // Update count on GET employees
+    if(isGetAll && response.ok){
+      try {
+        const list = await clone.json();
+        if(Array.isArray(list)) updateEmployeesManagedCount(list.length);
+      } catch {}
+    }
+
+    // Handle logging for each action
+    try {
+      if(isAdd && response.ok){
+        const reqBody = parseBody(init);
+        let created = null;
+        try { created = await clone.json(); } catch {}
+        recordChange('add', null, (created && created._id) ? created : reqBody);
+      } else if(isEdit){
+        const reqBody = parseBody(init);
+        // If server returns updated doc, prefer that; else fall back to request body
+        let after = null;
+        if(response.ok){
+          try { after = await clone.json(); } catch {}
+        }
+        after = after && after._id ? after : reqBody;
+        recordChange('edit', beforeSnapshot, after);
+      } else if(isDel){
+        if(response.ok){
+          recordChange('delete', beforeSnapshot, null);
+        }
+      }
+    } catch (e){
+      console.warn('Change log hook error:', e);
+    }
+
+    return response;
+  };
+})();
+</script>
 
 
 
