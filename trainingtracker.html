@@ -211,7 +211,6 @@
       <button onclick="sendReminders()">Send Reminder</button>
     </div>
   </div>
-  <script type="module" src="./db/db.js"></script>
   <script>
     const modal = document.getElementById('modal');
     const modalContent = document.getElementById('modal-content');
@@ -329,7 +328,7 @@
 
       overlay.style.display = 'flex';
       try {      
-        renderParticipants(trn.participants);
+        await renderParticipants(trn.participants);
       } catch (err) {
         console.error('Error loading participants:', err);
       }
