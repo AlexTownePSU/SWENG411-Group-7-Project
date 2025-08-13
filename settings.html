@@ -685,9 +685,15 @@ function toggleModal(id) {
     document.getElementById("employees-managed").textContent = hrUserData.employeesManaged;
     document.getElementById("last-login").textContent = hrUserData.lastLogin;
   });  
+window.addEventListener('storage', (e) => {
+  if (e.key === 'employeesManaged') {
+    document.getElementById('employees-managed').textContent = e.newValue || '0';
+  }
+});
   </script>
 </body>
 </html>
+
 
 
 
