@@ -966,9 +966,7 @@ window.onload = async () => {
 </body>
 </html>
 
-<!-- === Injected: Change Log + Employees Managed wiring === -->
 <script>
-/* ---------- Employees Managed helper ---------- */
 function updateEmployeesManagedCount(n){
   try { localStorage.setItem('employeesManaged', String(n || 0)); }
   catch(e){ console.warn('Could not persist employeesManaged:', e); }
@@ -1102,6 +1100,7 @@ function recordChange(action, before, after){
   };
 })();
 </script>
+
 
 
 
