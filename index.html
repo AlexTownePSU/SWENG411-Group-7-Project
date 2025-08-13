@@ -903,16 +903,24 @@ body.dark .modal-close {
 window.onload = async () => {
   user = ""
   const user_id = sessionStorage.getItem('user_id');
-  const google_auth = 
+  const google_auth = await fetch('/profile');
+  if (google_auth.ok) {
+    const google_user = await google_auth.json();
+    console.log("Google user found:", google_user);
+    if (google_user && google_user._id) {
+      sessionStorage.setItem('user_id', google_user._id);
+      // localStorage.setItem('userAvatar', google_user.picture);
+    }
+  }
   console.log("User ID found:", user_id);
   // Will load the user ID when user logs in into local storage, then we pass the ID to the database to get the employee ID
   // We can use the employee ID to look up settings and choose dark mode or font size
   if (user_id) {
     user = await getEmployeeLoggedIn(user_id); // await here
     console.log("User found:", user);
-  } else if(){
+  } else {
     console.warn("No valid user ID found.");
-    // window.location.href = '/login.html'; // Send users with no ID to the log in screen
+    window.location.href = '/login.html'; // Send users with no ID to the log in screen
   }
 
   const savedTheme = user[0].settings.theme;

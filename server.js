@@ -13,6 +13,7 @@ require ('dotenv').config();
 const session = require('express-session');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const mongoose = require('mongoose');
 
 const hostname = '0.0.0.0';
 const port = 3000;
@@ -31,6 +32,7 @@ const app = express();
 	}
 })();
 
+
 // Serve static files (like index.html) adding some extra protection by only showing public html files
 app.use(express.static(path.join(__dirname)));
 
@@ -44,6 +46,45 @@ app.use(session({
 // Initialize Passport for authentication and persistent login sessions
 app.use(passport.initialize());
 app.use(passport.session());
+// MongoDB connection
+const uri = "mongodb+srv://group7db:lSSiu4rXTW0Sh2u4@cluster0.ve13uvk.mongodb.net/raise_tracker_db?retryWrites=true&w=majority&appName=Cluster0"; 
+const client = new MongoClient(uri, {
+	serverApi: {
+		version: ServerApiVersion.v1,
+		strict: true,
+		deprecationErrors: true,
+	}
+});
+
+mongoose.connect(uri, {
+	useNewUrlParser: true,
+	useUnifiedTopology: true
+});
+
+const userSchema = new mongoose.Schema({
+	username: String,
+	password: String,
+	employee_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee' },
+	settings: { theme: String, font_size: String },
+	googleId: String,
+	displayName: String,
+	email: {type: String, required: true, unique: true }
+}, { collection: 'users' });
+
+const User = mongoose.model('User', userSchema);
+
+// Employee schema for lookup during user login
+const employeeSchema = new mongoose.Schema({
+	employee_name: String,
+	hire_date: Date,
+	job_title: String,
+	active: Boolean,
+	type: String,
+	trained: String,
+	qualification: String
+}, { collection: 'employees'});
+
+const Employee = mongoose.model('Employee', employeeSchema);
 
 // Configure Passport to use Google OAuth 2.0 strategy
 passport.use(new GoogleStrategy({
@@ -51,11 +92,36 @@ passport.use(new GoogleStrategy({
   clientSecret: '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',
   callbackURL: 'https://one-tahr-huge.ngrok-free.app/auth/google/callback'
 },
-function(accessToken, refreshToken, profile, done) {
-  // This function runs after successful authentication
-  // You can save or look up the user in your database here
-  return done(null, profile);
+async (accessToken, refreshToken, profile, done) => {
+  try {
+	// Attempt employee lookup by name when adding user
+	const employee = await Employee.findOne({ employee_name: profile.displayName });
+    let user = await User.findOne({ googleId: profile.id });
+
+    if (!user) {
+      user = await User.create({
+		username: profile.emails[0].value,
+		password: '', // Password is not used for Google users
+		employee_id: employee ? employee._id : null, // Link to employee if found
+		settings: { theme: 'light', font_size: '16px' }, // Default settings
+        googleId: profile.id,
+        displayName: profile.displayName,
+        email: profile.emails[0].value
+      });
+	}
+	return done(null, user);
+	} catch (err) {
+	  return done(err, null);
+	}
 }));
+
+// function(accessToken, refreshToken, profile, done) {
+//   // This function runs after successful authentication
+//   // You can save or look up the user in your database here
+//   return done(null, profile);
+// }
+
+// ));
 
 // Serialize user info into the session
 passport.serializeUser((user, done) => {
@@ -101,15 +167,6 @@ app.get('/profile', (req, res) => {
 });
 
 
-// MongoDB connection
-const uri = "mongodb+srv://group7db:lSSiu4rXTW0Sh2u4@cluster0.ve13uvk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"; 
-const client = new MongoClient(uri, {
-	serverApi: {
-		version: ServerApiVersion.v1,
-		strict: true,
-		deprecationErrors: true,
-	}
-});
 
 app.use(express.json());	// Allows for parsing JSON bodies
 app.use(express.urlencoded({ extended: true }));
@@ -126,3 +183,4 @@ connectToDatabase().then(() => {
 		console.log(`Server running at http://${hostname}:${port}/`);
 	});
 });
+
