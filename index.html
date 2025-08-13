@@ -458,6 +458,12 @@ body.dark .modal-close {
     }
   </script>
   <script>
+  function updateEmployeesManagedCount(n) {
+    try { localStorage.setItem('employeesManaged', String(n)); }
+    catch (e) { console.warn('Could not persist employeesManaged:', e); }
+  }
+</script>
+  <script>
     const { jsPDF } = window.jspdf;
 
     document.getElementById('userMenuBtn').addEventListener('click', e=>{
@@ -511,24 +517,26 @@ body.dark .modal-close {
     })();
     
 
-    function renderEmployees(list){
-      const tbody=document.getElementById('employee-body');
-      tbody.innerHTML='';
-      list.forEach(emp=>{
-        // Format hire_date to ISO string for consistency with system design
-        emp.hire_date = new Date(emp.hire_date).toISOString().slice(0,10);
-        const tr=document.createElement('tr');
-        tr.innerHTML=`
-          <td>${emp.employee_name}</td><td>${emp.type}</td><td>${emp.job_title}</td>
-          <td>${emp.hire_date}</td><td>${emp.active}</td><td>${emp.trained}</td><td>${emp.qualification}</td>
-          <td>
-            <button class="action-btn" onclick="viewDetails('${emp._id}')">View</button>
-            <button class="action-btn" onclick="editEmployee('${emp._id}')">Edit</button>
-            <button class="action-btn" onclick="deleteEmployee('${emp._id}')">Delete</button>
-          </td>`;
-        tbody.appendChild(tr);
-      });
-    }
+ function renderEmployees(list){
+  const tbody=document.getElementById('employee-body');
+  tbody.innerHTML='';
+  list.forEach(emp=>{
+    emp.hire_date = new Date(emp.hire_date).toISOString().slice(0,10);
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td>${emp.employee_name}</td><td>${emp.type}</td><td>${emp.job_title}</td>
+      <td>${emp.hire_date}</td><td>${emp.active}</td><td>${emp.trained}</td><td>${emp.qualification}</td>
+      <td>
+        <button class="action-btn" onclick="viewDetails('${emp._id}')">View</button>
+        <button class="action-btn" onclick="editEmployee('${emp._id}')">Edit</button>
+        <button class="action-btn" onclick="deleteEmployee('${emp._id}')">Delete</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+
+  // NEW: persist the currently displayed row count (filtered list)
+  updateEmployeesManagedCount(list.length);
+}
 
     const overlay=document.getElementById('modal-overlay');
     const modalContent=document.getElementById('modal-content');
@@ -965,6 +973,7 @@ window.onload = async () => {
   </script>
 </body>
 </html>
+
 
 
 
