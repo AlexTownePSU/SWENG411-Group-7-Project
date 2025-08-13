@@ -940,7 +940,7 @@ window.onload = async () => {
     }
   } catch (err) {
     console.error("Error fetching user data:", err);
-    //window.location.href = '/login.html'; // Redirect to login if there's an error
+    window.location.href = '/login.html'; // Redirect to login if there's an error
   }
   const savedTheme = user[0].settings.theme;
   console.log(`Theme settings found: ${savedTheme}`);
