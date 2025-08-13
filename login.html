@@ -136,6 +136,11 @@
   </div>
   
   <script>
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return JSON.parse(parts.pop().split(';').shift());
+    }
     function showRegistrationForm() {
       document.getElementById('login-form').style.display = 'none';
       document.getElementById('register-user-form').style.display = 'block';
@@ -145,6 +150,16 @@
       document.getElementById('login-form').style.display = 'block';
       document.getElementById('register-user-form').style.display = 'none';
       document.getElementById('welcome-text').textContent = 'Welcome back! Please login to your account';
+    }
+    try{
+      getCookie('user').then(user => {
+        if (user) {
+          console.log('User from cookie:', user);
+          window.location.href = '/index.html'; // Redirect to main page if user is already logged in
+        }
+      });
+    } catch(err) {
+      console.warn("Cookie not found.");
     }
   </script>
 </body>

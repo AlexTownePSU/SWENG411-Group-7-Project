@@ -32,8 +32,12 @@ const app = express();
 	}
 })();
 
+// Serve login.html at the root URL
+app.get('/', (req, res) => {
+	res.sendFile(path.join(__dirname, 'login.html'));
+});
 
-// Serve static files (like index.html) adding some extra protection by only showing public html files
+// Serve static files (like index.html, JS, CSS)
 app.use(express.static(path.join(__dirname)));
 
 // Session middleware: enables persistent login sessions and secures session data with a secret key
@@ -152,10 +156,47 @@ app.get('/auth/google',
 app.get('/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/login.html' }),
   function(req, res) {
+	req.session.userId = req.user._id; // Get the database generated user ID
+
+	// Create a cookie with user info
+	res.cookie('user', JSON.stringify({
+		id: req.user._id,
+		name: req.user.displayName,
+		email: req.user.email
+	}), {
+		httpOnly: true,
+		secure: true, // Secure using HTTPS
+		maxAge: 24 * 60 * 60 * 1000 // 1 day
+	});
+
     // Successful authentication, redirect to home or dashboard
-    res.redirect('/');
+    res.redirect('/index.html');
   }
 );
+
+app.get('/session-user', async (req, res) => {
+  if (req.isAuthenticated() && req.user && req.user._id) {
+    try {
+      // Fetch full user profile from the database using the stored _id
+      const user = await User.findById(req.user._id).populate('employee_id');
+      if (user) {
+        res.json({
+          id: user._id,
+          name: user.displayName,
+          email: user.email,
+          settings: user.settings,
+          employee: user.employee_id // includes linked employee details
+        });
+      } else {
+        res.status(404).json({ error: 'User not found' });
+      }
+    } catch (err) {
+      res.status(500).json({ error: 'Error fetching user profile' });
+    }
+  } else {
+    res.status(401).json({ error: 'Not authenticated' });
+  }
+});
 
 // Adding a route to get the authenticated user's profile
 app.get('/profile', (req, res) => {

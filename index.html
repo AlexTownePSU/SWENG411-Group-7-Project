@@ -907,6 +907,12 @@ body.dark .modal-close {
 
 window.onload = async () => {
   try {
+    // fetch('/session-user')
+    // .then(res => res.json())
+    // .then(data => {
+    //   console.log('User profile:', data);
+    // }).catch(err => console.error('Not authenticated', err));
+    
     user = "" // Start with empty user
     console.log("Checking for user ID session...");
     const user_id = sessionStorage.getItem('user_id'); // Look in session storage for user ID
@@ -938,6 +944,12 @@ window.onload = async () => {
         window.location.href = '/login.html'; // Send users with no ID to the log in screen
       }
     }
+
+    // getCookie('user').then(user => {
+    //   if (user) {
+    //     console.log('User from cookie:', user);
+    //   }
+    // })
   } catch (err) {
     console.error("Error fetching user data:", err);
     window.location.href = '/login.html'; // Redirect to login if there's an error
@@ -962,6 +974,22 @@ window.onload = async () => {
       if (img) img.src = e.newValue;
     }
   });
+
+  
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) {
+      const raw = parts.pop().split(';').shift();
+      try {
+        return JSON.parse(decodeURIComponent(raw));
+      } catch (err) {
+        console.error('Failed to parse cookie:', err);
+        return null;
+      }
+    }
+  }
+
   </script>
 </body>
 </html>
