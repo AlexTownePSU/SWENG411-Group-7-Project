@@ -685,14 +685,250 @@ function toggleModal(id) {
     document.getElementById("employees-managed").textContent = hrUserData.employeesManaged;
     document.getElementById("last-login").textContent = hrUserData.lastLogin;
   });  
-window.addEventListener('storage', (e) => {
-  if (e.key === 'employeesManaged') {
-    document.getElementById('employees-managed').textContent = e.newValue || '0';
-  }
-});
   </script>
+
+
+<!-- === Injected: Change Log Modal === -->
+<div class="modal-overlay" id="changelog-overlay" style="display:none; position:fixed; inset:0; background:var(--modal-bg); z-index:9999;">
+  <div class="modal" role="dialog" aria-modal="true" style="max-width:960px; margin:5vh auto; background:var(--panel-bg); border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.15); padding:1rem 1.2rem;">
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:.5rem;">
+      <h3 style="margin:.5rem 0 1rem;">Employee Change Log</h3>
+      <button class="modal-close" id="changelog-close" aria-label="Close" style="font-size:1.6rem; line-height:1; background:transparent; border:none; cursor:pointer;">&times;</button>
+    </div>
+    <p style="margin:.2rem 0 1rem; font-size:.9rem; opacity:.8;">Shows recent Adds, Edits, and Deletes from the dashboard. Click <em>Revert</em> to undo a change.</p>
+    <div style="overflow:auto; max-height:60vh; border:1px solid rgba(0,0,0,.08); border-radius:8px;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr style="position:sticky; top:0; background:var(--panel-bg);">
+            <th style="text-align:left; padding:.6rem; border-bottom:1px solid rgba(0,0,0,.08);">When</th>
+            <th style="text-align:left; padding:.6rem; border-bottom:1px solid rgba(0,0,0,.08);">Action</th>
+            <th style="text-align:left; padding:.6rem; border-bottom:1px solid rgba(0,0,0,.08);">Employee</th>
+            <th style="text-align:left; padding:.6rem; border-bottom:1px solid rgba(0,0,0,.08);">Details</th>
+            <th style="text-align:left; padding:.6rem; border-bottom:1px solid rgba(0,0,0,.08);">Revert</th>
+          </tr>
+        </thead>
+        <tbody id="changelog-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- === Injected: Change Log modal logic + live updates === -->
+<script>
+(function(){
+  function deepClone(obj){ try { return JSON.parse(JSON.stringify(obj)); } catch { return obj; } }
+  function prettyTime(iso){ try { return new Date(iso).toLocaleString(); } catch { return iso; } }
+  function diffFields(before, after){
+    const keys = ['employee_name','type','job_title','hire_date','active','trained','qualification'];
+    const diffs = [];
+    for(const k of keys){
+      const a = before ? before[k] : undefined;
+      const b = after  ? after[k]  : undefined;
+      if(a !== b){
+        diffs.push(`${k}: "${a ?? ''}" → "${b ?? ''}"`);
+      }
+    }
+    return diffs.join(', ');
+  }
+
+  function loadChangeLog(){
+    const log = JSON.parse(localStorage.getItem('employeeChangeLog') || '[]');
+    renderChangeLog(log);
+  }
+
+  function renderChangeLog(log){
+    const tbody = document.getElementById('changelog-body');
+    tbody.innerHTML = '';
+    if(!log.length){
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td colspan="5" style="padding:1rem; opacity:.7;">No changes yet.</td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+    for(const entry of log){
+      const tr = document.createElement('tr');
+      tr.style.borderBottom = '1px solid rgba(0,0,0,.06)';
+
+      let details = '';
+      if(entry.action === 'edit'){
+        details = diffFields(entry.before, entry.after) || '(no field differences found)';
+      } else if(entry.action === 'add'){
+        const e = entry.after || {};
+        details = `Added "${e.employee_name || '(name)'}" as ${e.job_title || '(title)'} (${e.type || 'type'})`;
+      } else if(entry.action === 'delete'){
+        const e = entry.before || {};
+        details = `Deleted "${e.employee_name || '(name)'}" (${e.job_title || '(title)'})`;
+      } else if(entry.action === 'revert'){
+        details = `Reverted change ${entry.revertOf}`;
+      }
+
+      const label = (entry.after && entry.after.employee_name)
+                 || (entry.before && entry.before.employee_name)
+                 || (entry.employeeId || '(unknown)');
+
+      const canRevert = !entry.reverted && (entry.action === 'add' || entry.action === 'edit' || entry.action === 'delete');
+      const revertBtn = canRevert
+        ? `<button class="action-btn" data-change-id="${entry.id}">Revert</button>`
+        : `<span style="opacity:.5;">${entry.reverted ? 'Reverted' : '-'}</span>`;
+
+      tr.innerHTML = `
+        <td style="padding:.6rem;">${prettyTime(entry.timestamp)}</td>
+        <td style="padding:.6rem; text-transform:capitalize;">${entry.action}</td>
+        <td style="padding:.6rem;">${label}</td>
+        <td style="padding:.6rem; font-size:.9rem;">${details}</td>
+        <td style="padding:.6rem;">${revertBtn}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    // Wire up revert buttons
+    tbody.querySelectorAll('button[data-change-id]').forEach(btn=>{
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-change-id');
+        btn.disabled = true;
+        try {
+          await revertChange(id);
+          alert('Change reverted.');
+        } catch (e){
+          console.error(e);
+          alert('Revert failed. See console for details.');
+        } finally {
+          btn.disabled = false;
+          loadChangeLog();
+        }
+      });
+    });
+  }
+
+  // ---- Revert helpers (call backend APIs) ----
+  async function fetchList(){
+    const res = await fetch('/api/employees/GetEmployees');
+    if(!res.ok) return [];
+    return await res.json();
+  }
+
+  async function findEmployeeBySnapshot(snap){
+    const list = await fetchList();
+    return list.find(e =>
+      (!snap.employee_name || e.employee_name === snap.employee_name) &&
+      (!snap.job_title     || e.job_title     === snap.job_title)     &&
+      (!snap.type          || e.type          === snap.type)          &&
+      (!snap.hire_date     || new Date(e.hire_date).toISOString().slice(0,10) === new Date(snap.hire_date).toISOString().slice(0,10))
+    ) || null;
+  }
+
+  async function revertAdd(entry){
+    // Undo an add = delete the added employee
+    let id = entry.after && entry.after._id;
+    if(!id && entry.after){
+      const found = await findEmployeeBySnapshot(entry.after);
+      id = found && found._id;
+    }
+    if(!id) throw new Error('Could not identify employee to delete for revert.');
+    const res = await fetch(`/api/employees/DeleteEmployees/${id}`, { method:'DELETE' });
+    if(!res.ok) throw new Error('Delete failed while reverting add.');
+  }
+
+  async function revertEdit(entry){
+    const before = entry.before;
+    if(!before || !before._id) throw new Error('Missing original snapshot for revert.');
+    const res = await fetch(`/api/employees/UpdateEmployees/${before._id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(before)
+    });
+    if(!res.ok) throw new Error('PUT failed while reverting edit.');
+  }
+
+  async function revertDelete(entry){
+    const before = deepClone(entry.before);
+    if(!before) throw new Error('Missing original snapshot for revert.');
+    delete before._id; // let backend assign a new id
+    const res = await fetch('/api/employees/SubmitEmployees', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(before)
+    });
+    if(!res.ok) throw new Error('POST failed while reverting delete.');
+  }
+
+  function appendRevertEntry(original){
+    const log = JSON.parse(localStorage.getItem('employeeChangeLog') || '[]');
+    log.unshift({
+      id: `rev_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
+      timestamp: new Date().toISOString(),
+      action: 'revert',
+      revertOf: original.id,
+      employeeId: original.employeeId || (original.after && original.after._id) || (original.before && original.before._id) || null
+    });
+    localStorage.setItem('employeeChangeLog', JSON.stringify(log));
+  }
+
+  async function revertChange(changeId){
+    const log = JSON.parse(localStorage.getItem('employeeChangeLog') || '[]');
+    const entry = log.find(e => e.id === changeId);
+    if(!entry) throw new Error('Change not found.');
+    if(entry.reverted) return;
+
+    if(entry.action === 'add')      await revertAdd(entry);
+    else if(entry.action === 'edit')await revertEdit(entry);
+    else if(entry.action === 'delete') await revertDelete(entry);
+    else return;
+
+    entry.reverted = true;
+    localStorage.setItem('employeeChangeLog', JSON.stringify(log));
+    appendRevertEntry(entry);
+  }
+
+  // ---- Modal wiring ----
+  const overlay = document.getElementById('changelog-overlay');
+  const openBtn = document.getElementById('open-changelog-btn');
+  const panel = document.getElementById('changelog-panel');
+  const closeBtn = document.getElementById('changelog-close');
+
+  function openModal(){
+    loadChangeLog();
+    overlay.style.display = 'block';
+  }
+  function closeModal(){ overlay.style.display = 'none'; }
+
+  if(openBtn) openBtn.addEventListener('click', openModal);
+  if(panel) panel.addEventListener('click', openModal);
+  if(closeBtn) closeBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e)=>{ if(e.target === overlay) closeModal(); });
+
+  // Live update the table whenever Dashboard writes to localStorage
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'employeeChangeLog' && overlay.style.display === 'block') {
+      loadChangeLog();
+    }
+    if (e.key === 'employeesManaged') {
+      const el = document.getElementById('employees-managed');
+      if(el) el.textContent = e.newValue || '0';
+    }
+  });
+
+  // Initialize Employees Managed value on load
+  document.addEventListener('DOMContentLoaded', () => {
+    const el = document.getElementById('employees-managed');
+    if(el && !el.textContent.trim()){
+      el.textContent = localStorage.getItem('employeesManaged') || '0';
+    }
+  });
+})();
+</script>
+
 </body>
 </html>
+
+
+
+
+
+
+
+
 
 
 
