@@ -903,13 +903,14 @@ body.dark .modal-close {
 window.onload = async () => {
   user = ""
   const user_id = sessionStorage.getItem('user_id');
+  const google_auth = 
   console.log("User ID found:", user_id);
   // Will load the user ID when user logs in into local storage, then we pass the ID to the database to get the employee ID
   // We can use the employee ID to look up settings and choose dark mode or font size
   if (user_id) {
     user = await getEmployeeLoggedIn(user_id); // await here
     console.log("User found:", user);
-  } else {
+  } else if(){
     console.warn("No valid user ID found.");
     // window.location.href = '/login.html'; // Send users with no ID to the log in screen
   }

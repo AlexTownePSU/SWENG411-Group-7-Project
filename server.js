@@ -31,11 +31,8 @@ const app = express();
 	}
 })();
 
-
-
 // Serve static files (like index.html) adding some extra protection by only showing public html files
 app.use(express.static(path.join(__dirname)));
-
 
 // Session middleware: enables persistent login sessions and secures session data with a secret key
 app.use(session({
@@ -93,6 +90,16 @@ app.get('/auth/google/callback',
     res.redirect('/');
   }
 );
+
+// Adding a route to get the authenticated user's profile
+app.get('/profile', (req, res) => {
+  if (req.isAuthenticated()) {
+    res.json(req.user); // This will contain the Google profile info
+  } else {
+    res.redirect('/login.html');
+  }
+});
+
 
 // MongoDB connection
 const uri = "mongodb+srv://group7db:lSSiu4rXTW0Sh2u4@cluster0.ve13uvk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"; 
