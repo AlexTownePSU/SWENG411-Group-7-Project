@@ -261,6 +261,7 @@ body.dark .modal-close {
       <h2 style="display:flex; align-items:center; justify-content:space-between;">
         Employee Summary
         <div style="position:relative;">
+          <button id="training-dashboard">Training Dashboard</button>
           <button id="add-employee">Add Employee</button>
           <button id="exportBtn"> Export ▼</button>
           <div id="exportDropdown" style="
@@ -466,6 +467,10 @@ body.dark .modal-close {
     });
     document.addEventListener('click', () => {
       document.getElementById('userDropdown').style.display='none';
+    });
+
+    document.getElementById('training-dashboard').addEventListener('click', () => {
+      window.location.href = 'trainingtracker.html';
     });
 
     // const employees=[
