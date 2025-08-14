@@ -663,7 +663,7 @@ function toggleModal(id) {
     console.log(`Theme is now: ${settings.theme}`);
     const user_res = await fetch(`api/users/UpdateUser/${user_id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: (function(){ const h={'Content-Type':'application/json'}; const t=getCsrfTokenFromMeta(); if(t) h['X-CSRF-TOKEN']=t; return h; })(),
       body: JSON.stringify({ username, password, employee_id, settings })
     });
     if(!user_res.ok){
@@ -686,7 +686,6 @@ function toggleModal(id) {
     document.getElementById("last-login").textContent = hrUserData.lastLogin;
   });  
   </script>
-
 
 <!-- === Injected: Change Log Modal === -->
 <div class="modal-overlay" id="changelog-overlay" style="display:none; position:fixed; inset:0; background:var(--modal-bg); z-index:9999;">
@@ -714,7 +713,6 @@ function toggleModal(id) {
 </div>
 
 
-<!-- === Injected: Change Log modal logic + live updates === -->
 <script>
 (function(){
   function deepClone(obj){ try { return JSON.parse(JSON.stringify(obj)); } catch { return obj; } }
@@ -782,7 +780,6 @@ function toggleModal(id) {
       tbody.appendChild(tr);
     }
 
-    // Wire up revert buttons
     tbody.querySelectorAll('button[data-change-id]').forEach(btn=>{
       btn.addEventListener('click', async () => {
         const id = btn.getAttribute('data-change-id');
@@ -801,9 +798,13 @@ function toggleModal(id) {
     });
   }
 
-  // ---- Revert helpers (call backend APIs) ----
+  function getCsrfTokenFromMeta(){
+    const tag = document.querySelector('meta[name="csrf-token"]');
+    return tag ? tag.getAttribute('content') : null;
+  }
+
   async function fetchList(){
-    const res = await fetch('/api/employees/GetEmployees');
+    const res = await fetch('/api/employees/GetEmployees', { credentials: 'include' });
     if(!res.ok) return [];
     return await res.json();
   }
@@ -819,7 +820,6 @@ function toggleModal(id) {
   }
 
   async function revertAdd(entry){
-    // Undo an add = delete the added employee
     let id = entry.after && entry.after._id;
     if(!id && entry.after){
       const found = await findEmployeeBySnapshot(entry.after);
@@ -827,30 +827,28 @@ function toggleModal(id) {
     }
     if(!id) throw new Error('Could not identify employee to delete for revert.');
     const res = await fetch(`/api/employees/DeleteEmployees/${id}`, { method:'DELETE' });
-    if(!res.ok) throw new Error('Delete failed while reverting add.');
+    if(!res.ok) throw new Error('Delete failed while reverting add. ' + (await res.text()).slice(0,300));
   }
 
   async function revertEdit(entry){
     const before = entry.before;
     if(!before || !before._id) throw new Error('Missing original snapshot for revert.');
-    const res = await fetch(`/api/employees/UpdateEmployees/${before._id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+    const res = await fetch(`/api/employees/UpdateEmployees/${before._id}`, { method: 'PUT', credentials: 'include',
+      headers: (function(){ const h={'Content-Type':'application/json'}; const t=getCsrfTokenFromMeta(); if(t) h['X-CSRF-TOKEN']=t; return h; })(),
       body: JSON.stringify(before)
     });
-    if(!res.ok) throw new Error('PUT failed while reverting edit.');
+    if(!res.ok) throw new Error('PUT failed while reverting edit. ' + (await res.text()).slice(0,300));
   }
 
   async function revertDelete(entry){
     const before = deepClone(entry.before);
     if(!before) throw new Error('Missing original snapshot for revert.');
-    delete before._id; // let backend assign a new id
-    const res = await fetch('/api/employees/SubmitEmployees', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    delete before._id;
+    const res = await fetch('/api/employees/SubmitEmployees', { method: 'POST', credentials: 'include',
+      headers: (function(){ const h={'Content-Type':'application/json'}; const t=getCsrfTokenFromMeta(); if(t) h['X-CSRF-TOKEN']=t; return h; })(),
       body: JSON.stringify(before)
     });
-    if(!res.ok) throw new Error('POST failed while reverting delete.');
+    if(!res.ok) throw new Error('POST failed while reverting delete. ' + (await res.text()).slice(0,300));
   }
 
   function appendRevertEntry(original){
@@ -870,35 +868,27 @@ function toggleModal(id) {
     const entry = log.find(e => e.id === changeId);
     if(!entry) throw new Error('Change not found.');
     if(entry.reverted) return;
-
     if(entry.action === 'add')      await revertAdd(entry);
     else if(entry.action === 'edit')await revertEdit(entry);
     else if(entry.action === 'delete') await revertDelete(entry);
     else return;
-
     entry.reverted = true;
     localStorage.setItem('employeeChangeLog', JSON.stringify(log));
     appendRevertEntry(entry);
+    await syncEmployeesManagedCount();
   }
 
-  // ---- Modal wiring ----
   const overlay = document.getElementById('changelog-overlay');
   const openBtn = document.getElementById('open-changelog-btn');
   const panel = document.getElementById('changelog-panel');
   const closeBtn = document.getElementById('changelog-close');
-
-  function openModal(){
-    loadChangeLog();
-    overlay.style.display = 'block';
-  }
+  function openModal(){ loadChangeLog(); overlay.style.display = 'block'; }
   function closeModal(){ overlay.style.display = 'none'; }
-
   if(openBtn) openBtn.addEventListener('click', openModal);
   if(panel) panel.addEventListener('click', openModal);
   if(closeBtn) closeBtn.addEventListener('click', closeModal);
   overlay.addEventListener('click', (e)=>{ if(e.target === overlay) closeModal(); });
 
-  // Live update the table whenever Dashboard writes to localStorage
   window.addEventListener('storage', (e) => {
     if (e.key === 'employeeChangeLog' && overlay.style.display === 'block') {
       loadChangeLog();
@@ -909,7 +899,6 @@ function toggleModal(id) {
     }
   });
 
-  // Initialize Employees Managed value on load
   document.addEventListener('DOMContentLoaded', () => {
     const el = document.getElementById('employees-managed');
     if(el && !el.textContent.trim()){
@@ -917,10 +906,38 @@ function toggleModal(id) {
     }
   });
 })();
+	// --- ADDED: define syncEmployeesManagedCount used by revertChange()
+async function syncEmployeesManagedCount(){
+  try {
+    const res = await fetch('/api/employees/GetEmployees', { credentials: 'include' });
+    if (!res.ok) return;
+    const list = await res.json();
+    const count = Array.isArray(list) ? list.length : 0;
+    localStorage.setItem('employeesManaged', String(count));
+    const el = document.getElementById('employees-managed');
+    if (el) el.textContent = String(count);
+  } catch (e) {
+    console.warn('Could not sync employeesManaged:', e);
+  }
+}
 </script>
-
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
