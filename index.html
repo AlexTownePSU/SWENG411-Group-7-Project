@@ -938,7 +938,7 @@ body.dark .dollar-input::before {
     document.getElementById('exportPdf').addEventListener('click', e => {
       e.preventDefault();
       const doc = new jsPDF();
-      const headers = [['Name','Type','Job Title','Start Date','Active','Trained','Qualification']];
+      const headers = [['Name','Type','Job Title','Start Date','Active','Trained','Qualification','Salary']];
       const rows = currentFilteredEmployees.map(emp => [
         emp.employee_name,
         emp.type,

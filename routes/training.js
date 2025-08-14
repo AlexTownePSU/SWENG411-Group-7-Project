@@ -46,10 +46,23 @@ router.put('/UpdateTrainingStatus/:id', async (req, res) => {
         
         const { id } = req.params;
         const updateData = req.body;
-
+        console.log('Update data received:', updateData);
         // Validate ObjectId
         if (!ObjectId.isValid(id)) {
             return res.status(400).json({ message: 'Invalid ObjectId format' });
+        }
+
+        // Delete _id field from updateData to complete update
+        delete updateData._id;
+        console.log('Update data received:', updateData);
+
+        
+        // Convert nested empl_id fields
+        if (Array.isArray(updateData.participants)) {
+            updateData.participants = updateData.participants.map(p => ({
+                ...p,
+                empl_id: ObjectId.isValid(p.empl_id) ? new ObjectId(p.empl_id) : p.empl_id
+            }));
         }
 
         // Update training status

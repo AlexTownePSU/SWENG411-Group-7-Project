@@ -153,7 +153,11 @@
       <span class="modal-close" id="modal-close">&times;</span>
       <h3>Training Details</h3>
       <div id="modal-content"></div>
-      <h3>Participants</h3>
+      <div style="display:flex; justify-content: space-between; align-items: center;">
+        <h3 style ="position:relative;">Participants <span id="participant-count"></span>
+          <button id="edit-btn">Edit</button>
+        </h3>
+      </div>
       <table id="participant-table">
         <thead>
           <th>Name</th>
@@ -164,6 +168,109 @@
         </thead>
         <tbody id="participant-content"></tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- Edit Employee Modal -->
+  <div class="modal-overlay" id="edit-modal-overlay">
+    <div class="modal">
+      <span class="modal-close" id="edit-modal-close">&times;</span>
+      <h3>Edit Training</h3>
+      <form id="edit-form">
+        <table id="edit-form-table">
+          <tr>
+            <td>
+              <span>ID:</span>
+            </td>
+            <td>
+              <span id="edit-id"></p>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="edit-name">Name:</label>
+            </td>
+            <td>
+              <input type="text" id="edit-name" required>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="edit-type">Type:</label>
+            </td>
+            <td>
+              <select id="edit-type">
+                <option value="Course">Course</option>
+                <option value="Certification">Certifictaion</option>
+                <option value="Orientation">Orientation</option>
+              </select>            
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="edit-duration">Duration:</label>
+            </td>
+            <td>
+              <input type="number" min="1" id="edit-duration" required></type>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="edit-duration-type">Type:</label>
+            </td>
+            <td>
+              <select id="edit-duration-type" required>
+                <option value="days">Days</option>
+                <option value="weeks">Weeks</option>
+                <option value="months">Months</option>
+                <option value="annually">Annually</option>
+              </select>            
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="edit-start-date">Start Date:</label><br><br>
+            </td>
+            <td>
+              <input type="date" id="edit-start-date">
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="edit-end-date">End Date:</label><br><br>
+            </td>
+            <td>
+              <input type="date" id="edit-end-date">
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="edit-required">Required:</label>
+            </td>
+            <td>
+              <input type="checkbox" id="edit-required">
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="edit-status">Status:</label>
+            </td>
+            <td>
+              <select id="edit-status">
+                <option value="Pending">Pending</option>
+                <option value="In-Progress">In-Progress</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <button type="submit">Save</button>
+            </td>
+          </tr>
+        </table>
+      </form>
     </div>
   </div>
 
@@ -182,11 +289,25 @@
           <option value="Orientation">Orientation</option>
         </select>
 
+        <label for="duration">Duration:</label>
+        <input type="number" min="1" id="duration" required />
+
+        <label for="duration-type">Type:</label>
+        <select id="duration-type" required>
+          <option value="days">Days</option>
+          <option value="weeks">Weeks</option>
+          <option value="months">Months</option>
+          <option value="annually">Annually</option>
+        </select>
+
         <label for="start">Start Date:</label>
         <input type="date" id="start" required />
 
         <label for="end">End Date:</label>
         <input type="date" id="end" required />
+
+        <label for="required">Required:</label>
+        <input type="checkbox" id="required" />
 
         <label for="status">Status:</label>
         <select id="status">
@@ -237,14 +358,31 @@
       const training = {
         name: document.getElementById('name').value,
         type: document.getElementById('type').value,
-        start: document.getElementById('start').value,
-        end: document.getElementById('end').value,
+        duration: parseInt(document.getElementById('duration').value),
+        duration_type: document.getElementById('duration-type').value,
+        start_date: document.getElementById('start').value,
+        end_date: document.getElementById('end').value,
+        required: document.getElementById('required').checked ? true : false,
         status: document.getElementById('status').value
       };
-      trainings.push(training);
+      addTrainingStatus(training);
       renderTrainings();
       closeModal();
     });
+
+    async function addTrainingStatus(training) {
+      try {
+        const response = await fetch('/api/training/AddTrainingStatus', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(training)
+        });
+      } catch (error) {
+        console.error('Error adding training status:', error);
+      }
+    }
 
     async function loadTrainings(list) {
       try{
@@ -278,10 +416,72 @@
           <td>${t.status}</td>
           <td>
             <button class="action-btn" onclick="viewDetails('${t._id}')">View</button>
+            <button class="action-btn" onclick="editTraining('${t._id}')">Edit</button>
+            <button class="action-btn" onclick="deleteTraining('${t._id}')">Delete</button>
           </td>
         `;
         tbody.appendChild(tr);
       });
+    }
+
+    const editOverlay = document.getElementById('edit-modal-overlay');
+    const editForm = document.getElementById('edit-form');
+    document.getElementById('edit-modal-close').addEventListener('click', ()=>editOverlay.style.display='none');
+    editOverlay.addEventListener('click', e => { if(e.target===editOverlay) editOverlay.style.display='none'; });
+
+    function editTraining(id) {
+      const trn = trainings.find(t => t._id === id);
+
+      document.getElementById('edit-id').innerText = trn._id;
+      document.getElementById('edit-name').value = trn.name;
+      document.getElementById('edit-type').value = trn.type;
+      document.getElementById('edit-duration').value = trn.duration;
+      document.getElementById('edit-duration-type').value = trn.duration_type;
+      document.getElementById('edit-start-date').value = trn.start_date;
+      document.getElementById('edit-end-date').value = trn.end_date;
+      document.getElementById('edit-required').checked = trn.required;
+      document.getElementById('edit-status').value = trn.status;
+      editOverlay.style.display = 'flex';
+    }
+
+    editForm.addEventListener('submit', t => {
+      t.preventDefault();
+      const id = document.getElementById('edit-id').innerText; // Get the ID from the training object;
+      const trn = trainings.find(t => t._id === id);
+      trn.name = document.getElementById('edit-name').value;
+      trn.type = document.getElementById('edit-type').value;
+      trn.duration = parseInt(document.getElementById('edit-duration').value);
+      trn.duration_type = document.getElementById('edit-duration-type').value;
+      trn.start_date = document.getElementById('edit-start-date').value;
+      trn.end_date = document.getElementById('edit-end-date').value;
+      trn.required = document.getElementById('edit-required').checked ? true : false;
+      trn.status = document.getElementById('edit-status').value;
+      
+      (async () => {
+        await putUpdatedTraining(trn);
+        console.log('Post update training values:', trn);
+        loadTrainings(trainings); // Refresh training list after edit);
+        renderTrainings(); // Re-render the training list
+      editOverlay.style.display = 'none';
+      })();
+    });
+
+    async function putUpdatedTraining(trn) {
+      try {
+        const response = await fetch(`/api/training/UpdateTrainingStatus/${trn._id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(trn)
+        });
+        console.log('JSON String submitted: ', JSON.stringify(trn));
+
+        if (!response.ok) throw new Error('Failed to update training');
+        console.log('Training updated successfully:', trn);
+      } catch (error) {
+        console.error('Error updating training:', error);
+      }
     }
 
     async function viewDetails(id) {
@@ -334,6 +534,18 @@
       }
     }
 
+    async function deleteTrainingRecord(id) {
+      try {
+        const response = await fetch(`/api/training/DeleteTrainingStatus/${id}`, {
+          method: 'DELETE'
+        });
+        if (!response.ok) throw new Error('Failed to delete employee');
+        console.log(`Training ${id} deleted successfully`);
+      } catch (error) {
+        console.error('Error deleting training:', error);
+      }
+    }
+
     async function getEmployeeName(empl_id) {
       try {
         const response = await fetch(`/api/employees/GetEmployees?_id=${empl_id}`);
@@ -350,28 +562,71 @@
     }
     
     // Function to render participants in the modal
-    async function renderParticipants(list) {
+    async function renderParticipants(list, mode = 'view') {
       const tbody = document.getElementById('participant-content');
       tbody.innerHTML = '';
       if (list.length === 0) {
         tbody.innerHTML = '<tr><td colspan="5">No participants found.</td></tr>';
         return;
       } else {
+        document.getElementById('participant-count').innerText = `(${list.length})`;
+        console.log('Mode: ', mode);
+        if (document.getElementById('edit-btn')) {
+          document.getElementById('edit-btn').addEventListener('click', () => {
+            mode = 'edit';
+            console.log('Edit button clicked, mode set to:', mode);
+            renderParticipants(list, mode); // Re-render participants in edit mode
+          });
+        }
+        // Create placeholder rows while fetching names
         list.forEach(p => {
-          console.log('Employee ID:', p.empl_id);
-          console.log('Participant:', p);
-          (async () => { const empName = await getEmployeeName(p.empl_id)
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${empName}</td>
-            <td>${p.progress}</td>
-            <td>${p.pass_fail}</td>
-            <td>${p.date_completed ? new Date (p.date_completed).toISOString().slice(0, 10) : 'In progress'}</td>
-            <td>${p.user_rating}</td>
-            `
-            tbody.appendChild(tr);
-          })().catch(err => { console.error('Error fetching employee name:', err);})
+          const row = document.createElement('tr');
+          row.id = `row-${p.empl_id}`;
+          row.innerHTML = `
+            <td>Loading...</td>
+            `;
+            tbody.appendChild(row);
         });
+        if(mode === 'view'){
+          list.forEach(p => {
+            console.log('Employee ID:', p.empl_id);
+            console.log('Participant:', p);
+            (async () => { const empName = await getEmployeeName(p.empl_id)
+            const row = document.getElementById(`row-${p.empl_id}`); // Update placeholder row when data is returned
+            row.innerHTML = `
+              <td>${empName}</td>
+              <td>${p.progress}</td>
+              <td>${p.pass_fail}</td>
+              <td>${p.date_completed ? new Date (p.date_completed).toISOString().slice(0, 10) : 'In progress'}</td>
+              <td>${p.user_rating}</td>
+              `;
+            })().catch(err => { console.error('Error fetching employee name:', err);})
+          });
+        } else if (mode === 'edit') {
+          list.forEach(p => {
+              (async () => { const empName = await getEmployeeName(p.empl_id)
+              const row = document.getElementById(`row-${p.empl_id}`);
+              row.innerHTML = `
+                <td>${empName}</td>
+                <td>
+                  <input type="text" value="${p.progress}" id="progress-${p.empl_id}" style="width: 25px;">
+                </td>
+                <td>
+                  <select id="pass-fail-${p.empl_id}" style="width: 100%;">
+                    <option value="Pass" ${p.pass_fail === 'Pass' ? 'selected' : ''}>Pass</option>
+                    <option value="Fail" ${p.pass_fail === 'Fail' ? 'selected' : ''}>Fail</option>
+                  </select>
+                </td>
+                <td>
+                  <input type="date" value="${p.date_completed || ''}" id="date-completed-${p.empl_id}" style="width: 100%;">
+                </td>
+                <td>
+                  <input type="number" min="1" max="5" value="${p.user_rating}" id="rating-${p.empl_id}" style="width: 25px;">
+                </td>
+              `;
+            })().catch(err => { console.error('Error fetching employee name:', err);})
+          });
+        }
       }
     }
 
@@ -394,7 +649,7 @@
 
     window.onload = async () => {
       await loadTrainings(trainings);  // Populate trainings list      
-      console.log('Trainings returned: ', trainings);
+      // console.log('Trainings returned: ', trainings);
       await renderTrainings();                  // Render list into table
     };
   </script>
