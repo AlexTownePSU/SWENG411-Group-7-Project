@@ -880,6 +880,8 @@ body, button, input, select, textarea { font-size: inherit; }
   renderEmployees(currentFilteredEmployees);
 }
 
+  setInterval(getEmployee, 10000, employees); // Auto-refresh every 10 seconds to get updates
+
   // Handle Apply Filters button click
   document.getElementById('apply-filters').addEventListener('click', applyFilters);
 
