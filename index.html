@@ -206,6 +206,32 @@ body.dark .modal {
 body.dark .modal-close {
   color: #ccc;
 }
+.dollar-input {
+  position: relative;
+  display: inline-block;
+}
+
+.dollar-input::before {
+  content: "$";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: bold;
+  color: #333;
+}
+
+.dollar-input::before {
+  left: 5px;
+}
+
+.dollar-input input {
+  padding: 5px 20px;
+  text-align: left;
+}
+body.dark .dollar-input::before {
+  color: #ccc;
+}
+
 @keyframes fadeIn {
   from {
     transform: scale(.9);
@@ -385,6 +411,10 @@ body.dark .modal-close {
             <td><input type="text" id="edit-qualification"></td>
           </tr>
           <tr>
+            <td><label for="edit-salary">Salary:</label></td>
+            <td><div class="dollar-input"><input type="text" id="edit-salary"></div></td>
+          </tr>
+          <tr>
             <td>
               <button type="submit">Save</button>
             </td>
@@ -439,6 +469,10 @@ body.dark .modal-close {
           <tr>
             <td><label for="add-qualification">Qualification:</label></td>
             <td><input type="text" id="add-qualification" placeholder="Qualified" required></td>
+          </tr>
+          <tr>
+            <td><label for="add-salary">Salary</label></td>
+            <td><div class="dollar-input"><input type="number" id="add-salary" placeholder="50000" step="1" min="0"></div></td>
           </tr>
           <tr>
             <td><button type="submit">Add Employee</button></td>
@@ -520,7 +554,7 @@ body.dark .modal-close {
         const tr=document.createElement('tr');
         tr.innerHTML=`
           <td>${emp.employee_name}</td><td>${emp.type}</td><td>${emp.job_title}</td>
-          <td>${emp.hire_date}</td><td>${emp.active}</td><td>${emp.trained}</td><td>${emp.qualification}</td>
+          <td>${emp.hire_date}</td><td>${emp.active ? 'Yes' : 'No'}</td><td>${emp.trained}</td><td>${emp.qualification}</td>
           <td>
             <button class="action-btn" onclick="viewDetails('${emp._id}')">View</button>
             <button class="action-btn" onclick="editEmployee('${emp._id}')">Edit</button>
@@ -541,6 +575,9 @@ body.dark .modal-close {
 
     async function viewDetails(id){
       const emp=employees.find(e=>e._id===id);
+      // const res = await fetch(`/api/employees/GetEmployees?_id=${id}`);
+      // const data = await res.json();
+      // const emp = data[0]; // Assuming the API returns an array with one employee object
       if(emp) {
         console.log('Viewing details for employee:', emp);
       }
@@ -548,6 +585,12 @@ body.dark .modal-close {
         console.error('Employee not found for ID:', id);
         return;
       }
+      console.log('Salary before parsing:', emp.salary);
+      const salaryValue = emp.salary?.$numberDecimal
+      ? parseFloat(emp.salary.$numberDecimal).toFixed(2)
+      : (0.00).toFixed(2);
+      console.log('Salary value for display:', salaryValue)
+      
       modalContent.innerHTML=`
       <table>
         <tr>
@@ -582,6 +625,9 @@ body.dark .modal-close {
           <td><strong>Qualification:</strong></td>
           <td>${emp.qualification}</td>
         </tr>
+        <tr>
+          <td><strong>Salary:</strong></td>
+          <td>$ ${salaryValue}</td>
       </table>
       `;
       
@@ -657,6 +703,11 @@ body.dark .modal-close {
 
     function editEmployee(id) {
       const emp = employees.find(e => e._id === id);
+      // Convert salary value
+      const salaryValue = emp.salary?.$numberDecimal
+      ? parseFloat(emp.salary.$numberDecimal).toFixed(2)
+      : (0.00).toFixed(2);
+
       document.getElementById('edit-id').innerText = emp._id;
       document.getElementById('edit-name').value = emp.employee_name;
       document.getElementById('edit-type').value = emp.type;
@@ -665,6 +716,7 @@ body.dark .modal-close {
       document.getElementById('edit-active').checked = emp.active;
       document.getElementById('edit-trained').value = emp.trained;
       document.getElementById('edit-qualification').value = emp.qualification;
+      document.getElementById('edit-salary').value = salaryValue;
       editOverlay.style.display = 'flex';
     }
 
@@ -680,12 +732,12 @@ body.dark .modal-close {
       emp.active = document.getElementById('edit-active').checked;
       emp.trained = document.getElementById('edit-trained').value;
       emp.qualification = document.getElementById('edit-qualification').value;
+      emp.salary = document.getElementById('edit-salary').value ? parseFloat(document.getElementById('edit-salary').value).toFixed(2) : null;
       
       (async () => {
         await putUpdatedEmployee(emp);
         console.log('Post update employee values:', emp);
-        // Update the filtered list and re-render after employee edit finishes
-        updateFilteredEmployeesAfterEdit(emp);
+        getEmployee(employees); // Refresh employee list after edit);
         renderEmployees(currentFilteredEmployees);
       editOverlay.style.display = 'none';
       })();
@@ -805,7 +857,8 @@ body.dark .modal-close {
         job_title: document.getElementById('add-title').value,
         hire_date: document.getElementById('add-hire_date').value,
         trained: document.getElementById('add-trained').value,
-        qualification: document.getElementById('add-qualification').value
+        qualification: document.getElementById('add-qualification').value,
+        salary: document.getElementById('add-salary').value || null // Salary is optional
       };
 
       // Post new employee to the database via the API
@@ -845,10 +898,14 @@ body.dark .modal-close {
     });
 
     function exportToCSV(data) {
-      const headers = ['Name','Type','Job Title','Start Date','Active','Trained','Qualification'];
+      const headers = ['Name','Type','Job Title','Start Date','Active','Trained','Qualification','Salary'];
       const csvRows = [];
       csvRows.push(headers.join(','));
       data.forEach(emp => {
+        // Convert salary value
+        const salaryValue = emp.salary?.$numberDecimal
+        ? parseFloat(emp.salary.$numberDecimal).toFixed(2)
+        : (0.00).toFixed(2);
         const row = [
           `"${emp.employee_name}"`,
           `"${emp.type}"`,
@@ -856,7 +913,8 @@ body.dark .modal-close {
           `"${emp.hire_date}"`,
           `"${emp.active}"`,
           `"${emp.trained}"`,
-          `"${emp.qualification}"`
+          `"${emp.qualification}"`,
+          `"${salaryValue || 'N/A'}"` // Include salary if available
         ];
         csvRows.push(row.join(','));
       });
@@ -888,7 +946,8 @@ body.dark .modal-close {
         emp.hire_date,
         emp.active ? 'Active' : 'Inactive',
         emp.trained,
-        emp.qualification
+        emp.qualification,
+        emp.salary || 'N/A' // Include salary if available
       ]);
       doc.autoTable({
         head: headers,

@@ -112,20 +112,13 @@ async (accessToken, refreshToken, profile, done) => {
         displayName: profile.displayName,
         email: profile.emails[0].value
       });
+	  console.log(`New user created: ${user}`);
 	}
 	return done(null, user);
 	} catch (err) {
 	  return done(err, null);
 	}
 }));
-
-// function(accessToken, refreshToken, profile, done) {
-//   // This function runs after successful authentication
-//   // You can save or look up the user in your database here
-//   return done(null, profile);
-// }
-
-// ));
 
 // Serialize user info into the session
 passport.serializeUser((user, done) => {

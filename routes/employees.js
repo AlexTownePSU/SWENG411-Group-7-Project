@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { ObjectId } = require('mongodb');
+const { Decimal128 } = require('mongodb');
 const connectToDatabase = require('../db/db.js');
 
 router.get('/GetEmployees', async (req, res) => {
@@ -80,7 +81,7 @@ router.post('/SubmitEmployees', async (req, res) => {
     const db = await connectToDatabase();
     const collection = db.collection('employees');
 
-    const { employee_name, hire_date, job_title, active, type, trained, qualification } = req.body;
+    const { employee_name, hire_date, job_title, active, type, trained, qualification, salary } = req.body;
 
     const newEmployee = {
       employee_name,
@@ -89,7 +90,8 @@ router.post('/SubmitEmployees', async (req, res) => {
       active,
       type,
       trained,
-      qualification
+      qualification,
+      salary: salary ? Decimal128.fromString(salary.toString()) : Decimal128.fromString('0.00')
     };
 
     const result = await collection.insertOne(newEmployee);
@@ -105,7 +107,7 @@ router.put('/UpdateEmployees/:id', async (req, res) => {
     const collection = db.collection('employees');
 
     const employeeId = req.params.id;
-    const { employee_name, hire_date, job_title, active, type, trained, qualification } = req.body;
+    const { employee_name, hire_date, job_title, active, type, trained, qualification, salary } = req.body;
 
     const updatedEmployee = {
       employee_name,
@@ -114,8 +116,10 @@ router.put('/UpdateEmployees/:id', async (req, res) => {
       active,
       type,
       trained,
-      qualification
+      qualification,
+      salary: salary ? Decimal128.fromString(salary.toString()) : Decimal128.fromString('0.00')
     };
+    console.log('Salary Decimal conversion: ', updatedEmployee.salary);
     const result = await collection.updateOne(
       { _id: new ObjectId(employeeId) },
       { $set: updatedEmployee }
