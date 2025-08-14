@@ -147,9 +147,10 @@ app.get('/auth/google',
 
 // Route to handle callback from Google after authentication
 app.get('/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: '/login.html' }),
-  function(req, res) {
-	req.session.userId = req.user._id; // Get the database generated user ID
+	passport.authenticate('google', { failureRedirect: '/login.html' }),
+	function(req, res) {
+		req.session.userId = req.user._id; // Get the database generated user ID
+		console.log('Google callback info:', req.user);
 
 	// Create a cookie with user info
 	res.cookie('user', JSON.stringify({
