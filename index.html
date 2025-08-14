@@ -11,6 +11,8 @@
   :root {
   --bg-color: #f4f6fa;
   --text-color: #1f2a63;
+
+  --font-size: 16px;
 }
 body {
   font-family: Arial, sans-serif;
@@ -242,7 +244,62 @@ body.dark .dollar-input::before {
     opacity: 1;
   }
 }
-  </style>
+  
+/* === Theme-aware scrollbar styling (page-wide & modals) === */
+:root {
+  --sb-track: #e6eaf2;
+  --sb-thumb: #b5bfd0;
+
+  --font-size: 16px;
+}
+body.dark {
+  --sb-track: #1f2547;
+  --sb-thumb: #56608a;
+}
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--sb-thumb) var(--sb-track);
+}
+/* WebKit */
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: var(--sb-track);
+  margin-block: 8px; /* shorten under rounded corners */
+  border-radius: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--sb-thumb);
+  border-radius: 10px;
+  border: 2px solid var(--sb-track); /* inset thumb slightly */
+}
+
+
+/* Ensure controls inherit font size */
+body, button, input, select, textarea { font-size: inherit; }
+
+/* Unified modal sizing/centering */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal {
+  position: relative;
+  max-height: 85vh;
+  min-height: 200px;
+  overflow-y: auto;
+}
+
+</style>
   <!-- jsPDF CDN for PDF export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
@@ -1017,8 +1074,8 @@ window.onload = async () => {
   console.log(`Theme settings found: ${savedTheme}`);
   const savedFontSize = user[0].settings.font_size;
   console.log(`Font settings found: ${savedFontSize}`);
-  document.body.className = savedTheme;
-  document.body.style.setProperty('--font-size', savedFontSize);
+  document.body.classList.remove('light','dark'); document.body.classList.add(savedTheme);
+  document.documentElement.style.setProperty('--font-size', savedFontSize);
    const savedAvatar = localStorage.getItem('userAvatar');
   if (savedAvatar) {
     const avatarImg = document.getElementById('top-avatar');
@@ -1050,6 +1107,49 @@ window.onload = async () => {
   }
 
   </script>
+
+<script>
+  (function(){
+    // Keys used across pages
+    const THEME_KEY = 'rt_theme';
+    const FONT_KEY  = 'rt_font';
+
+    function setTheme(theme){
+      const t = (theme === 'dark') ? 'dark' : 'light';
+      document.body.classList.remove('light','dark');
+      document.body.classList.add(t);
+    }
+    function setFontSize(size){
+      const val = size || getComputedStyle(document.documentElement).getPropertyValue('--font-size') || '16px';
+      // Apply at root so everything inherits
+      document.documentElement.style.setProperty('--font-size', val.trim());
+    }
+
+    window.applyThemeAndFontFromStorage = function(){
+      try {
+        const theme = localStorage.getItem(THEME_KEY) || null;
+        const font  = localStorage.getItem(FONT_KEY) || null;
+        if (theme) setTheme(theme);
+        if (font)  setFontSize(font);
+      } catch(e){ console.warn('Could not apply theme/font from storage:', e); }
+    };
+
+    window.persistThemeAndFont = function(theme, font){
+      try {
+        if (theme) localStorage.setItem(THEME_KEY, theme);
+        if (font)  localStorage.setItem(FONT_KEY, font);
+        if (theme) setTheme(theme);
+        if (font)  setFontSize(font);
+      } catch(e){ console.warn('Could not persist theme/font:', e); }
+    };
+
+    document.addEventListener('DOMContentLoaded', applyThemeAndFontFromStorage);
+    window.addEventListener('storage', function(e){
+      if (e.key === THEME_KEY || e.key === FONT_KEY) applyThemeAndFontFromStorage();
+    });
+  })();
+</script>
+
 </body>
 </html>
 
@@ -1208,6 +1308,7 @@ async function recordAddWithResponse(isAdd, response, init){
 }
 
 </script>
+
 
 
 
