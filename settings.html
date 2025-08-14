@@ -906,9 +906,24 @@ function toggleModal(id) {
     }
   });
 })();
+	// --- ADDED: define syncEmployeesManagedCount used by revertChange()
+async function syncEmployeesManagedCount(){
+  try {
+    const res = await fetch('/api/employees/GetEmployees', { credentials: 'include' });
+    if (!res.ok) return;
+    const list = await res.json();
+    const count = Array.isArray(list) ? list.length : 0;
+    localStorage.setItem('employeesManaged', String(count));
+    const el = document.getElementById('employees-managed');
+    if (el) el.textContent = String(count);
+  } catch (e) {
+    console.warn('Could not sync employeesManaged:', e);
+  }
+}
 </script>
 </body>
 </html>
+
 
 
 
