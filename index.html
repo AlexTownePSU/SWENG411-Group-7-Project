@@ -1187,6 +1187,28 @@ function recordChange(action, before, after){
   };
 })();
 </script>
+<script>
+
+// --- ADDED: prefer server-created object when logging ADD so revert has _id
+async function recordAddWithResponse(isAdd, response, init){
+  try {
+    if (!isAdd) return false;
+    let created = null;
+    try { created = await response.clone().json(); } catch (_){}
+    const bodyObj = (function(){ try { return JSON.parse(init && init.body || '{}'); } catch(_) { return null; } })();
+    if (created || bodyObj) {
+      // before=null, after=created||body
+      if (typeof recordChange === 'function') {
+        recordChange('add', null, created || bodyObj);
+        return true;
+      }
+    }
+  } catch(e){ console.warn('recordAddWithResponse failed:', e); }
+  return false;
+}
+
+</script>
+
 
 
 
