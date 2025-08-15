@@ -419,6 +419,13 @@ body, button, input, select, textarea { font-size: inherit; }
 
 body{ font-size: var(--font-size); }
 </style>
+  <script>
+    // Making this global for multiple calls across different script blocks
+    function getCsrfTokenFromMeta(){
+      const tag = document.querySelector('meta[name="csrf-token"]');
+      return tag ? tag.getAttribute('content') : null;
+    }
+  </script>
 </head>
 <body>
   <header>
@@ -858,10 +865,11 @@ document.body.classList.remove('light','dark'); document.body.classList.add(sele
     });
   }
 
-  function getCsrfTokenFromMeta(){
-    const tag = document.querySelector('meta[name="csrf-token"]');
-    return tag ? tag.getAttribute('content') : null;
-  }
+  // Moved to global scope for reuse
+  // function getCsrfTokenFromMeta(){
+  //   const tag = document.querySelector('meta[name="csrf-token"]');
+  //   return tag ? tag.getAttribute('content') : null;
+  // }
 
   async function fetchList(){
     const res = await fetch('/api/employees/GetEmployees', { credentials: 'include' });
