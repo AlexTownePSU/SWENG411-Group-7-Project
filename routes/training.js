@@ -92,7 +92,7 @@ router.post('/AddTrainingStatus', async (req, res) => {
 
         // Validate required fields
         if (!newTrainingStatus.name || !newTrainingStatus.type || !newTrainingStatus.duration || !newTrainingStatus.duration_type || !newTrainingStatus.start_date || !newTrainingStatus.required) {
-            return res.status(400).json({ message: 'Missing required fields' });
+            return res.status(400).json('Missing required fields');
         }
 
         // Insert new training status

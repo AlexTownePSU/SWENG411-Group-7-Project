@@ -517,6 +517,7 @@ body.dark textarea.is-invalid {
           <option value="annually">Annually</option>
         </select>
 
+        <h4>Available from:</h4>
         <label for="start">Start Date:</label>
         <input type="date" id="start" required />
 
@@ -534,19 +535,21 @@ body.dark textarea.is-invalid {
           <option value="Cancelled">Cancelled</option>
         </select>
 
+        <hr style="margin: 1.5rem 0;">
+        <h4>Add Participants</h4>
+        <div id="participant-search"></div>
+        <table id="participant-content">
+          <thead>
+            <th>Name</th>
+            <th>Progress</th>
+            <th>P/F</th>
+            <th>Date Completed</th>
+            <th>Rating</th>
+          </thead>
+          <tbody id="participant-content-body"></tbody>
+        </table>
         <button type="submit">Save</button>
       </form>
-      <hr style="margin: 1.5rem 0;">
-      <h4>Send Reminder Email</h4>
-      <label for="reminder-frequency">Frequency:</label>
-      <select id="reminder-frequency">
-        <option value="weekly">Weekly</option>
-        <option value="bi-weekly">Bi-Weekly</option>
-        <option value="monthly">Monthly</option>
-        <option value="annually">Annually</option>
-        <option value="none">None</option>
-      </select>
-      <button onclick="sendReminders()">Send Reminder</button>
     </div>
   </div>
   <script>
