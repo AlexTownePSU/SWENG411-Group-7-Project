@@ -131,4 +131,27 @@ router.delete('/DeleteTrainingStatus/:id', async (req, res) => {
     }
 });
 
+// Lookup route: Find training courses with a participant matching the given employee id
+router.get('/GetParticipantCourses/:id', async (req, res) => {
+    try {
+        const db = await connectToDatabase();
+        const collection = db.collection('training_status');
+        const { id } = req.params;
+
+        // Validate ObjectId
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).json({ message: 'Invalid ObjectId format' });
+        }
+
+        // Find courses where any participant.empl_id matches the provided id
+        const courses = await collection.find({
+            'participants.empl_id': new ObjectId(id)
+        }).toArray();
+        res.status(200).json(courses);
+    } catch (error) {
+        console.error('Error looking up training courses:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
 module.exports = router;

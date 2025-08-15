@@ -302,6 +302,7 @@ body, button, input, select, textarea { font-size: inherit; }
 </style>
   <!-- jsPDF CDN for PDF export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="./raise-eligibility-checker.updated.js"></script>
 </head>
 <body>
   <header>
@@ -385,7 +386,12 @@ body, button, input, select, textarea { font-size: inherit; }
       <span class="modal-close" id="modal-close">&times;</span>
       <h3>Employee Details</h3>
       <div id="modal-content"></div>
-      <h3>Performance Details</h3>
+      <div style="display:flex; justify-content:space-between;align-items:center;">
+        <h3>Performance Details</h3>
+        <div style="position:relative;">
+          <button id="check-raise-eligibility-btn">Check raise eligibility</button>
+        </div>
+      </div>
       <table id="performance-table">
         <thead>
           <th>Rating</th>
@@ -634,9 +640,6 @@ body, button, input, select, textarea { font-size: inherit; }
 
     async function viewDetails(id){
       const emp=employees.find(e=>e._id===id);
-      // const res = await fetch(`/api/employees/GetEmployees?_id=${id}`);
-      // const data = await res.json();
-      // const emp = data[0]; // Assuming the API returns an array with one employee object
       if(emp) {
         console.log('Viewing details for employee:', emp);
       }
@@ -689,7 +692,25 @@ body, button, input, select, textarea { font-size: inherit; }
           <td>$ ${salaryValue}</td>
       </table>
       `;
-      
+      document.getElementById('check-raise-eligibility-btn').addEventListener('click', async () => {
+        try {
+          // Example: fetch current user info to get employeeId
+          // const res = await fetch('/session-user');
+          // const user = await res.json();
+          // const employeeId = user.employee?._id || user.employee_id || user.id;
+          const employeeId = emp._id; // Use id from viewed employee;
+
+          if (!employeeId) {
+            alert('Employee ID not found.');
+            return;
+          }
+
+          const eligible = await isEmployeeEligibleForRaise(employeeId);
+          alert(eligible ? 'You are eligible for a raise!' : 'You are not eligible for a raise yet.');
+        } catch (err) {
+          alert('Error checking eligibility: ' + err.message);
+        }
+      });
       overlay.style.display='flex';
       try {
       // Fetch performance ratings before rendering them
@@ -699,7 +720,7 @@ body, button, input, select, textarea { font-size: inherit; }
         console.error('Error fetching/rendering performance ratings:', error);
         performanceContent.innerHTML = `<tr><td colspan="2">Performance data unavailable</td></tr>`;
       }
-    }
+    }   
 
     // Fetch performance ratings from API
     async function getPerformanceRatings(list, filters = {}) {

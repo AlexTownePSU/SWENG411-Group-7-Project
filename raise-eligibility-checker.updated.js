@@ -16,7 +16,7 @@
  */
 
 /** Optional API prefix. Use "" if routes are mounted at the root. */
-const API_PREFIX = ""; // e.g. "/api" if your server uses that path
+const API_PREFIX = "/api/"; // e.g. "/api" if your server uses that path
 
 /** Build a URL with query parameters. */
 function buildUrl(path, params = {}) {
@@ -60,7 +60,7 @@ async function isEmployeeEligibleForRaise(employeeId) {
 
 /** Fetch a single employee by _id */
 async function fetchEmployeeById(employeeId) {
-  const url = buildUrl("/GetEmployees", { _id: employeeId });
+  const url = buildUrl("employees/GetEmployees", { _id: employeeId });
   const res = await fetch(url);
   if (!res.ok) throw new Error(`GetEmployees failed: ${res.status}`);
   const data = await res.json();
@@ -75,7 +75,7 @@ async function fetchEmployeeById(employeeId) {
 
 /** Fetch performance ratings for an employee */
 async function fetchPerformanceRatingsByEmployeeId(employeeId) {
-  const url = buildUrl("/GetPerformanceRatings", { employee_id: employeeId });
+  const url = buildUrl("performance/GetPerformanceRatings", { employee_id: employeeId });
   const res = await fetch(url);
   if (!res.ok) throw new Error(`GetPerformanceRatings failed: ${res.status}`);
   const data = await res.json();
@@ -88,7 +88,7 @@ async function fetchPerformanceRatingsByEmployeeId(employeeId) {
 
 /** Fetch training status records for an employee */
 async function fetchTrainingStatusByEmployeeId(employeeId) {
-  const url = buildUrl("/GetTrainingStatus", { employee_id: employeeId });
+  const url = `/api/training/GetParticipantCourses/${employeeId}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`GetTrainingStatus failed: ${res.status}`);
   const data = await res.json();
@@ -112,17 +112,33 @@ async function fetchTrainingStatusByEmployeeId(employeeId) {
  * - If there are no required trainings that include this employee, return true if any training that includes them is complete.
  */
 function checkTrainingCompleteForEmployee(trainingRecords, employeeId) {
-  if (!Array.isArray(trainingRecords) || trainingRecords.length === 0) return false;
-
+  console.log("Checking training records for employee", employeeId, trainingRecords);
+  if (!Array.isArray(trainingRecords) || trainingRecords.length === 0) {
+    console.log("No training records found for employee", employeeId);
+    return false;
+  }
   const statusIsComplete = (s) => {
-    if (typeof s === "boolean") return s;
-    if (s == null) return false;
+    console.log("Inside statusIsComplete with status:", s);
+    if (typeof s === "boolean") {
+      console.log("Status boolean:", s);
+      return s;
+    }
+    if (s == null) {
+      console.log("Status is null or undefined:", s); 
+      return false;
+    }
+    if (typeof s === "string") {
+      console.log("Status string:", s);
+      const t = s.toLowerCase();
+      return t.includes("complete") || t.includes("completed") || t.includes("pass");
+    }
     const t = String(s).toLowerCase();
     return t.includes("complete") || t.includes("completed") || t.includes("pass");
   };
-
+  console.log("Outside status check now");
   /** Given a training record, extract any participant entries for this employee. */
   const participantsFor = (rec) => {
+    console.log("Checking participants for record:", rec);
     const maybeLists = [
       rec.participants,
       rec.attendees,
@@ -138,6 +154,7 @@ function checkTrainingCompleteForEmployee(trainingRecords, employeeId) {
         p.Employee_id ||
         p.emp_id ||
         p.employeeId ||
+        p.empl_id ||
         (typeof p.employee === "object" ? p.employee?._id : p.employee);
       return pid && String(pid) === String(employeeId);
     });
@@ -148,14 +165,15 @@ function checkTrainingCompleteForEmployee(trainingRecords, employeeId) {
 
   if (requiredThatIncludeEmployee.length > 0) {
     // All required trainings that include the employee must be complete
+    console.log("Required trainings that include employee:", requiredThatIncludeEmployee);
     return requiredThatIncludeEmployee.every((r) => {
       const ps = participantsFor(r);
-      return ps.some((p) => statusIsComplete(p.status || p.training_status || p.Training_status || p.complete));
+      return ps.some((p) => statusIsComplete(p.pass_fail || p.status || p.training_status || p.Training_status || p.complete));
     });
   }
 
   // Otherwise, allow any completed training that includes the employee
-  return trainingRecords.some((r) => participantsFor(r).some((p) => statusIsComplete(p.status || p.training_status || p.Training_status || p.complete)));
+  return trainingRecords.some((r) => participantsFor(r).some((p) => statusIsComplete(p.pass_fail || p.status || p.training_status || p.Training_status || p.complete)));
 }
 
 /** Check if hire date is at least 90 days ago */
