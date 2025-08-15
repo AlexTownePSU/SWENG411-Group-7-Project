@@ -639,7 +639,8 @@ body, button, input, select, textarea { font-size: inherit; }
     var performance_ratings = [];
 
     async function viewDetails(id){
-      const emp=employees.find(e=>e._id===id);
+      var emp= "" // Clear emp variable to avoid stale data
+      emp = await employees.find(e=>e._id===id);
       if(emp) {
         console.log('Viewing details for employee:', emp);
       }
@@ -692,25 +693,42 @@ body, button, input, select, textarea { font-size: inherit; }
           <td>$ ${salaryValue}</td>
       </table>
       `;
-      document.getElementById('check-raise-eligibility-btn').addEventListener('click', async () => {
+      const checkBtn = document.getElementById('check-raise-eligibility-btn');
+      if (checkBtn) {
         try {
-          // Example: fetch current user info to get employeeId
-          // const res = await fetch('/session-user');
-          // const user = await res.json();
-          // const employeeId = user.employee?._id || user.employee_id || user.id;
-          const employeeId = emp._id; // Use id from viewed employee;
+          // Remove previous listeners by replacing the element
+          const newBtn = checkBtn.cloneNode(true);
+          checkBtn.parentNode.replaceChild(newBtn, checkBtn);
 
-          if (!employeeId) {
-            alert('Employee ID not found.');
-            return;
-          }
-
-          const eligible = await isEmployeeEligibleForRaise(employeeId);
-          alert(eligible ? 'You are eligible for a raise!' : 'You are not eligible for a raise yet.');
+          newBtn.addEventListener('click', async () => {
+            // Only use the current employee's id
+            const eligible = await checkEmployeeRaise(emp._id);
+            // Show result to user (e.g., alert or update modal)
+            alert(eligible ? 'You are eligible for a raise!' : 'You are not eligible for a raise yet.');          
+          });
         } catch (err) {
           alert('Error checking eligibility: ' + err.message);
         }
-      });
+      }
+      // document.getElementById('check-raise-eligibility-btn').addEventListener('click', async () => {
+      //   try {
+      //     // Example: fetch current user info to get employeeId
+      //     // const res = await fetch('/session-user');
+      //     // const user = await res.json();
+      //     // const employeeId = user.employee?._id || user.employee_id || user.id;
+      //     const employeeId = emp._id; // Use id from viewed employee;
+
+      //     if (!employeeId) {
+      //       alert('Employee ID not found.');
+      //       return;
+      //     }
+
+      //     const eligible = await isEmployeeEligibleForRaise(employeeId);
+      //     alert(eligible ? 'You are eligible for a raise!' : 'You are not eligible for a raise yet.');
+      //   } catch (err) {
+      //     alert('Error checking eligibility: ' + err.message);
+      //   }
+      // });
       overlay.style.display='flex';
       try {
       // Fetch performance ratings before rendering them
