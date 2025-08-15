@@ -2,7 +2,7 @@
 
 export function logoutUser() {
     sessionStorage.removeItem("user_id");   // Clear the session storage
-    window.location.href = "login.html";    // Redirect back to log in
+    window.location.href = "/login.html";    // Redirect back to log in
 }
 
 export async function loginUser(username, password) {
